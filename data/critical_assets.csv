@@ -1,7 +1,9 @@
-asset,primary_users,business_value,ramification_if_breached
-Core banking systems,Operations teams and branch networks,Processes balances transfers and account lifecycle events,Transaction disruption settlement delays and systemic trust impact
-Payment processing systems,Payments operations and treasury teams,Enables card ACH wire and real-time rails,Payment outages direct revenue loss and regulatory exposure
-Identity and access management (AD/IAM),All internal staff and admins,Controls authentication authorization and privileged access,Privilege escalation lateral movement and broad compromise risk
-Online and mobile banking platforms,Customers digital banking teams and fraud units,Primary customer channel for account services and transactions,Account takeover fraud service outage and reputational damage
-Customer data repositories,Data engineering compliance and service teams,Stores PII account data and financial history,Data breach penalties class-action exposure and extortion pressure
-Security operations stack (SIEM/EDR/SOAR),SOC incident response and threat hunting teams,Provides detection telemetry triage and response coordination,Reduced visibility slower containment and larger breach impact
+asset_id,asset,primary_users,business_value,ramification_if_breached,criticality_1_low_5_high
+A01,Core banking systems,Operations teams and branch networks,Processes balances transfers and account lifecycle events,Transaction disruption settlement delays and systemic trust impact,5
+A02,Payment processing systems,Payments operations and treasury teams,Enables card ACH wire and real-time rails,Payment outages direct revenue loss and regulatory exposure,5
+A03,Identity and access management (AD/IAM),All internal staff and admins,Controls authentication authorization and privileged access,Privilege escalation lateral movement and broad compromise risk,5
+A04,Online and mobile banking platforms,Customers digital banking teams and fraud units,Primary customer channel for account services and transactions,Account takeover fraud service outage and reputational damage,5
+A05,Customer data repositories,Data engineering compliance and service teams,Stores PII account data and financial history,Data breach penalties class-action exposure and extortion pressure,5
+A06,Security operations stack (SIEM/EDR/SOAR),SOC incident response and threat hunting teams,Provides detection telemetry triage and response coordination,Reduced visibility slower containment and larger breach impact,4
+A07,SWIFT/RTGS gateway,Treasury operations payments teams and settlement specialists,Connects high-value interbank transfers and settlement workflows,Settlement disruption fraud risk and severe regulatory and liquidity consequences,5
+A08,Tokenized asset platform,Digital asset product teams custody operations and platform engineering,Supports issuance custody transfer and oversight of tokenized financial assets,Asset manipulation custody loss compliance breaches and market confidence damage,4

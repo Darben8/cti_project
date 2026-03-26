@@ -47,10 +47,11 @@ with col2:
     store it, put it on the dark web and use it even months later making prevention harder.
     At the same time, banks face increasingly sophisticated threats, including AI-enabled fraud and attacks targeting digital banking channels, which continue
     to rank among top executive concerns.
-- Banking faces persistent pressure from credential abuse, phishing, ransomware, and web app attacks.
-- A CTI-led approach reduces uncertainty by translating external threat data into action for controls, detection engineering, and prioritization.
-- Intelligence-backed prioritization helps reduce breach likelihood and expected financial impact by focusing resources on the highest-probability, highest-impact scenarios.
-- This supports measurable outcomes for both technical teams and executive stakeholders.
+
+    - Banking faces persistent pressure from credential abuse, phishing, ransomware, and web app attacks.
+    - A CTI-led approach reduces uncertainty by translating external threat data into action for controls, detection engineering, and prioritization.
+    - Intelligence-backed prioritization helps reduce breach likelihood and expected financial impact by focusing resources on the highest-probability, highest-impact scenarios.
+    - This supports measurable outcomes for both technical teams and executive stakeholders.
         """
     )
     st.subheader("Decisions Enabled by CTI")

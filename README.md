@@ -35,12 +35,20 @@ docker run --rm -p 8501:8501 --env-file .env banking-cti-m1
 ```
 
 ## Project Structure
-- `app.py` - landing page + milestone checklist + background/use case/buy-in
-- `pages/1_Threat_Trends_and_Critical_Assets.py`
-- `pages/2_Diamond_Models.py`
-- `pages/3_Dashboard_Starter.py`
-- `data/critical_assets.csv`
-- `data/threat_events.csv`
+- `app.py` - Streamlit app entry point
+- `README.md` - project overview and setup instructions
+- `requirements.txt` - Python dependencies
+- `Dockerfile` - container setup for the app
+- `pages/1_Industry_Background.py` - industry background page
+- `pages/2_Threat_Trends.py` - threat trends and threat intelligence overview
+- `pages/3_Critical_Assets.py` - critical assets page
+- `pages/4_Diamond_Models.py` - Diamond Model analysis page
+- `pages/5_Dashboard_Starter.py` - dynamic dashboard page
+- `pages/6_Intel_Buyin.py` - intelligence buy-in page
+- `pages/7_Team.py` - team page
+- `pages/Stakeholders.py` - stakeholders page
+- `data/critical_assets.csv` - critical assets dataset
+- `data/threat_events.csv` - threat events dataset
 
 ## Notes
 - Citations are displayed in APA-style summary format in the app.

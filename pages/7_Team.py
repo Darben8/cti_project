@@ -20,10 +20,10 @@ Role: Milestone 1 Project Manager, Industry Research, Streamlit app development,
 Signature: Otis Service (03/25/2026)
             
 **Jiwon Chang**
-Role: Threat Intelligence Research & Api integration, dashboard development
+Role: Intelligence buy in research
 Signature: Jiwon Chang (03/25/2026) 
             
 **Supradipta Panta**
-Role: Threat Intelligence Research & Api integration, dashboard development 
+Role: Code review
 Signature: Supradipta Panta (03/25/2026)
 """)
