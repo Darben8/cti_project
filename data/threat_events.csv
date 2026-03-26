@@ -1,0 +1,21 @@
+date,threat_type,region,target_asset,mitre_technique,incident_count,severity,source
+2026-01-05,Credential Theft,United States,Online Banking Platform,T1078,22,4.6,PhishTank
+2026-01-05,Phishing,United States,Customer Data Repository,T1566,18,4.2,PhishTank
+2026-01-12,Ransomware,United States,Core Banking System,T1486,6,4.9,ransomware.live
+2026-01-12,Web Application Attack,United States,Online Banking Platform,T1190,9,4.4,Shodan
+2026-01-19,Credential Theft,United States,Identity and Access Management,T1110,25,4.8,PhishTank
+2026-01-19,Phishing,United States,Online Banking Platform,T1566,19,4.3,PhishTank
+2026-01-26,Ransomware,United States,Payment Processing System,T1486,5,5.0,ransomware.live
+2026-01-26,Web Application Attack,United States,Customer Data Repository,T1190,7,4.1,Shodan
+2026-02-02,Credential Theft,United States,Online Banking Platform,T1078,27,4.9,PhishTank
+2026-02-02,Phishing,United States,Identity and Access Management,T1566,21,4.5,PhishTank
+2026-02-09,Ransomware,United States,Core Banking System,T1486,7,4.8,ransomware.live
+2026-02-09,Web Application Attack,United States,Payment Processing System,T1190,8,4.2,Shodan
+2026-02-16,Credential Theft,United States,Customer Data Repository,T1110,24,4.7,PhishTank
+2026-02-16,Phishing,United States,Online Banking Platform,T1566,20,4.4,PhishTank
+2026-02-23,Ransomware,United States,Identity and Access Management,T1486,4,4.9,ransomware.live
+2026-02-23,Web Application Attack,United States,Online Banking Platform,T1190,10,4.3,Shodan
+2026-03-01,Credential Theft,United States,Online Banking Platform,T1078,29,5.0,PhishTank
+2026-03-01,Phishing,United States,Payment Processing System,T1566,23,4.6,PhishTank
+2026-03-08,Ransomware,United States,Customer Data Repository,T1486,6,4.8,ransomware.live
+2026-03-08,Web Application Attack,United States,Core Banking System,T1190,9,4.4,Shodan
