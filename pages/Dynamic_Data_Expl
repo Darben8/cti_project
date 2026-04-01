@@ -1,0 +1,112 @@
+import streamlit as st
+import pandas as pd
+from datetime import datetime, timedelta
+import numpy as np
+import sys
+
+# Import data validation utilities
+sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent))
+from utils.data_validation import DatasetQualityValidator
+
+# Page configuration
+st.set_page_config(page_title="Dynamic Data Explorer", layout="wide")
+
+st.title("📊 Dynamic Data Explorer")
+
+# Generate sample data
+@st.cache_data
+def load_sample_data():
+    np.random.seed(42)
+    sources = ["API", "Database", "CSV Import", "Web Scrape", "Manual Entry"]
+    categories = ["Security", "Infrastructure", "Application", "Network", "Database"]
+    
+    num_records = 500
+    data = {
+        "id": range(1, num_records + 1),
+        "data_source": np.random.choice(sources, num_records),
+        "category": np.random.choice(categories, num_records),
+        "date_created": [datetime.now() - timedelta(days=int(x)) for x in np.random.uniform(0, 90, num_records)],
+        "value": np.random.uniform(10, 1000, num_records),
+        "status": np.random.choice(["Active", "Inactive", "Pending"], num_records)
+    }
+    return pd.DataFrame(data)
+
+df = load_sample_data()
+
+# Dataset Quality Validation
+st.divider()
+with st.expander("ℹ️ Data Quality & Source Validation", expanded=False):
+    validator = DatasetQualityValidator()
+    size_check = validator.validate_dataset_size(df, "Sample Dataset")
+    time_check = validator.validate_time_window(df, "date_created", "Sample Dataset")
+    source_check = validator.validate_by_source(df, "data_source", min_rows=50)
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total Records", size_check["row_count"])
+        st.caption(f"{'✅' if size_check['meets_ideal'] else '⚠️'} {size_check['message']}")
+    
+    with col2:
+        st.metric("Time Window (Days)", time_check["days_covered"])
+        st.caption(f"{'✅' if time_check['meets_ideal'] else '⚠️'} {time_check['message']}")
+    
+    with col3:
+        st.metric("Data Sources", len(df['data_source'].unique()))
+        st.caption(f"Period: {time_check['date_min']} to {time_check['date_max']}")
+    
+    st.subheader("Source Coverage")
+    for source, details in source_check.items():
+        st.caption(f"{details['message']}")
+st.divider()
+
+# Sidebar filters
+st.sidebar.header("🔍 Filters")
+selected_sources = st.sidebar.multiselect(
+    "Select Data Source(s)",
+    options=sorted(df["data_source"].unique()),
+    default=sorted(df["data_source"].unique())
+)
+
+# Filter data
+filtered_df = df[df["data_source"].isin(selected_sources)].copy()
+filtered_df = filtered_df.sort_values("date_created", ascending=False)
+
+# Display summary statistics
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.metric("📈 Total Records", len(filtered_df))
+
+with col2:
+    st.metric("📅 Date Range (Days)", 
+              (filtered_df["date_created"].max() - filtered_df["date_created"].min()).days)
+
+with col3:
+    top_category = filtered_df["category"].value_counts().idxmax() if len(filtered_df) > 0 else "N/A"
+    st.metric("🏆 Top Category", top_category)
+
+with col4:
+    active_count = len(filtered_df[filtered_df["status"] == "Active"])
+    st.metric("✅ Active Records", active_count)
+
+# Display sample records
+st.subheader("📋 Sample Records")
+sample_size = st.slider("Number of records to display", 5, 50, 10)
+st.dataframe(
+    filtered_df.head(sample_size)[["id", "data_source", "category", "date_created", "status", "value"]],
+    use_container_width=True
+)
+
+# Additional analytics
+st.subheader("📊 Data Breakdown")
+col1, col2 = st.columns(2)
+
+with col1:
+    st.write("**Records by Source**")
+    source_counts = filtered_df["data_source"].value_counts()
+    st.bar_chart(source_counts)
+
+with col2:
+    st.write("**Records by Category**")
+    category_counts = filtered_df["category"].value_counts()
+    st.bar_chart(category_counts)
