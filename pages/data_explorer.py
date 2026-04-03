@@ -69,7 +69,7 @@ def fetch_threatfox():
         st.write("ThreatFox sample:", df.head(2))
 
         df["indicator"] = df["ioc"]
-        df["type"] = df["ioc_type"]
+        df["type"] = df["threat_type"]
         df["date"] = df["first_seen"]
         df["source"] = "ThreatFox"
 
