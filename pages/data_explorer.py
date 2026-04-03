@@ -50,13 +50,9 @@ def fetch_threatfox():
 
         df = pd.DataFrame(data["data"])
 
-        # Normalize columns
-        df = df.rename(columns={
-            "ioc": "indicator",
-            "ioc_type": "type",
-            "first_seen": "date",
-            "id": "id"
-        })
+        df["indicator"] = df.get("ioc", None)
+        df["type"] = df.get("ioc_type", df.get("malware", "unknown"))
+        df["date"] = df.get("first_seen", None)
 
         df["source"] = "ThreatFox"
 
@@ -85,13 +81,6 @@ if df.empty:
 df["date"] = pd.to_datetime(df["date"], errors="coerce")
 
 
-st.write("PhishTank rows:", len(phish_df))
-st.write("ThreatFox rows:", len(threatfox_df))
-
-st.write("Combined rows:", len(df))
-st.write(df["source"].value_counts())
-
-
 # -------------------------------
 # FILTERS
 # -------------------------------
@@ -114,10 +103,6 @@ filtered_df = df[
     (df["source"].isin(sources)) &
     (df["type"].isin(types))
 ]
-
-
-st.write("Filtered rows:", len(filtered_df))
-st.write(filtered_df["source"].value_counts())
 
 
 # -------------------------------
