@@ -10,18 +10,22 @@ st.title("📊 Dynamic Data Explorer (Live API)")
 # -------------------------------
 
 @st.cache_data(ttl=3600)
-def fetch_openphish():
-    url = "https://openphish.com/feed.txt"
+def fetch_phishtank():
+    url = "https://data.phishtank.com/data/online-valid.json"
     try:
-        res = requests.get(url, timeout=10)
-        lines = res.text.strip().split("\n")
-        df = pd.DataFrame(lines, columns=["indicator"])
-        df["date"] = pd.Timestamp.now(tz="UTC")
+        res = requests.get(url, headers={"User-Agent": "phishtank/yourapp"}, timeout=15)
+        data = res.json()
+        df = pd.DataFrame(data)
+        df = df.rename(columns={
+            "phish_id": "id",
+            "url": "indicator",
+            "submission_time": "date"
+        })
+        df["source"] = "PhishTank"
         df["type"] = "phishing"
-        df["source"] = "OpenPhish"
         return df[["indicator", "date", "type", "source"]]
     except Exception as e:
-        st.error(f"OpenPhish API error: {e}")
+        st.error(f"PhishTank API error: {e}")
         return pd.DataFrame()
 
 
@@ -63,14 +67,14 @@ def fetch_threatfox():
 # -------------------------------
 
 with st.spinner("Fetching live threat intelligence data..."):
-    openphish_df = fetch_openphish()
+    phishtank_df = fetch_phishtank()
     threatfox_df = fetch_threatfox()
 
 st.subheader("DEBUG: Raw Data Counts")
-st.write("OpenPhish rows:", len(openphish_df))
+st.write("PhishTank rows:", len(phishtank_df))
 st.write("ThreatFox rows:", len(threatfox_df))
 
-df = pd.concat([openphish_df, threatfox_df], ignore_index=True)
+df = pd.concat([phishtank_df, threatfox_df], ignore_index=True)
 
 if df.empty:
     st.warning("No data could be loaded from APIs.")
