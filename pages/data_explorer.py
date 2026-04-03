@@ -63,6 +63,8 @@ def fetch_threatfox():
         return pd.DataFrame()
 
 
+
+
 # -------------------------------
 # LOAD DATA
 # -------------------------------
@@ -79,6 +81,11 @@ if df.empty:
 
 # Convert date safely
 df["date"] = pd.to_datetime(df["date"], errors="coerce")
+
+
+st.subheader("DEBUG: Raw Data Counts")
+st.write("PhishTank rows:", len(phish_df))
+st.write("ThreatFox rows:", len(threatfox_df))
 
 
 # -------------------------------
