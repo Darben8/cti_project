@@ -16,25 +16,18 @@ st.title("📊 Dynamic Data Explorer (Live API)")
 @st.cache_data(ttl=3600)
 def fetch_phishtank():
     url = "https://data.phishtank.com/data/online-valid.json"
-
     try:
-        res = requests.get(url, timeout=10)
+        res = requests.get(url, headers={"User-Agent": "phishtank/yourapp"}, timeout=10)
         data = res.json()
-
         df = pd.DataFrame(data)
-
-        # Normalize columns
         df = df.rename(columns={
             "phish_id": "id",
             "url": "indicator",
             "submission_time": "date"
         })
-
         df["source"] = "PhishTank"
         df["type"] = "phishing"
-
-        return df[["id", "indicator", "date", "type", "source"]]
-
+        return df[["indicator", "date", "type", "source"]]
     except Exception as e:
         st.error(f"PhishTank API error: {e}")
         return pd.DataFrame()
@@ -43,48 +36,31 @@ def fetch_phishtank():
 @st.cache_data(ttl=3600)
 def fetch_threatfox():
     url = "https://threatfox-api.abuse.ch/api/v1/"
-
     headers = {
         "User-Agent": "CTI-Streamlit-App/1.0 (Academic Project)",
         "Accept": "application/json",
         "Content-Type": "application/json",
         "Auth-Key": "fed4e03e0b56b36bfc0468217bc4acaeb1153d887d818d2b"
     }
-
-    auth_key = "anonymous"
-
     payload = {
         "query": "get_iocs",
-        "limit": 100,
+        "limit": 100
     }
-
     try:
         res = requests.post(url, json=payload, headers=headers, timeout=10)
-
         data = res.json()
-
         if data.get("query_status") != "ok":
             st.error("ThreatFox API returned non-ok response")
             return pd.DataFrame()
-
         df = pd.DataFrame(data["data"])
-
-        st.write("ThreatFox columns:", df.columns.tolist())
-        st.write("ThreatFox sample:", df.head(2))
-
         df["indicator"] = df["ioc"]
         df["type"] = df["threat_type"]
         df["date"] = df["first_seen"]
         df["source"] = "ThreatFox"
-
-        st.write("ThreatFox sample after mapping:", df[["indicator", "date", "type", "source"]].head(3))
-
         return df[["indicator", "date", "type", "source"]]
-
     except Exception as e:
         st.error(f"ThreatFox API error: {e}")
         return pd.DataFrame()
-
 
 # -------------------------------
 # LOAD DATA
