@@ -45,8 +45,8 @@ def fetch_threatfox():
         res = requests.post(url, json=payload, timeout=10)
         data = res.json()
 
-        st.write("ThreatFox API status:", data.get("query_status"))
-
+        st.write("FULL ThreatFox response:", data)
+        
         if data.get("query_status") != "ok":
             return pd.DataFrame()
 
