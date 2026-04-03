@@ -47,6 +47,7 @@ docker run --rm -p 8501:8501 --env-file .env banking-cti-m1
 - `pages/6_Intel_Buyin.py` - intelligence buy-in page
 - `pages/7_Team.py` - team page
 - `pages/Stakeholders.py` - stakeholders page
+- `pages/data_explorer.py` - data explorer page
 - `data/critical_assets.csv` - critical assets dataset
 - `data/threat_events.csv` - threat events dataset
 
