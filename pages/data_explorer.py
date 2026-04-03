@@ -46,18 +46,18 @@ def fetch_threatfox():
         "Content-Type": "application/x-www-form-urlencoded"
     }
 
+    auth_key = "anonymous"
+
     payload = {
         "query": "get_iocs",
-        "limit": 100
+        "limit": 100,
+        "auth_key": auth_key
     }
 
     try:
         res = requests.post(url, data=payload, headers=headers, timeout=10)
 
-        st.write("HTTP Status:", res.status_code)
-
         data = res.json()
-        st.write("API Status:", data)
 
         if data.get("query_status") != "ok":
             st.error("ThreatFox API returned non-ok response")
@@ -93,11 +93,6 @@ if df.empty:
 
 # Convert date safely
 df["date"] = pd.to_datetime(df["date"], errors="coerce")
-
-
-st.subheader("DEBUG: Raw Data Counts")
-st.write("PhishTank rows:", len(phish_df))
-st.write("ThreatFox rows:", len(threatfox_df))
 
 
 # -------------------------------
