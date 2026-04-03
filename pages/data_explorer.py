@@ -84,6 +84,14 @@ if df.empty:
 # Convert date safely
 df["date"] = pd.to_datetime(df["date"], errors="coerce")
 
+
+st.write("PhishTank rows:", len(phish_df))
+st.write("ThreatFox rows:", len(threatfox_df))
+
+st.write("Combined rows:", len(df))
+st.write(df["source"].value_counts())
+
+
 # -------------------------------
 # FILTERS
 # -------------------------------
@@ -106,6 +114,11 @@ filtered_df = df[
     (df["source"].isin(sources)) &
     (df["type"].isin(types))
 ]
+
+
+st.write("Filtered rows:", len(filtered_df))
+st.write(filtered_df["source"].value_counts())
+
 
 # -------------------------------
 # SAMPLE DATA
