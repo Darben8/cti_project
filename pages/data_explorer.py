@@ -43,7 +43,7 @@ def fetch_threatfox():
     headers = {
         "User-Agent": "CTI-Streamlit-App/1.0 (Academic Project)",
         "Accept": "application/json",
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
         "Auth-Key": "fed4e03e0b56b36bfc0468217bc4acaeb1153d887d818d2b"
     }
 
@@ -55,7 +55,7 @@ def fetch_threatfox():
     }
 
     try:
-        res = requests.post(url, data=payload, headers=headers, timeout=10)
+        res = requests.post(url, json=payload, headers=headers, timeout=10)
 
         data = res.json()
         st.write("Query status:", data.get("query_status"))
