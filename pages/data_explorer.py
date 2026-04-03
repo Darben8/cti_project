@@ -3,10 +3,6 @@ import pandas as pd
 import requests
 from datetime import datetime
 
-if st.button("Clear Cache"):
-    st.cache_data.clear()
-    st.rerun()
-
 st.title("📊 Dynamic Data Explorer (Live API)")
 
 # -------------------------------
@@ -14,22 +10,18 @@ st.title("📊 Dynamic Data Explorer (Live API)")
 # -------------------------------
 
 @st.cache_data(ttl=3600)
-def fetch_phishtank():
-    url = "https://data.phishtank.com/data/online-valid.json"
+def fetch_openphish():
+    url = "https://openphish.com/feed.txt"
     try:
-        res = requests.get(url, headers={"User-Agent": "phishtank/yourapp"}, timeout=10)
-        data = res.json()
-        df = pd.DataFrame(data)
-        df = df.rename(columns={
-            "phish_id": "id",
-            "url": "indicator",
-            "submission_time": "date"
-        })
-        df["source"] = "PhishTank"
+        res = requests.get(url, timeout=10)
+        lines = res.text.strip().split("\n")
+        df = pd.DataFrame(lines, columns=["indicator"])
+        df["date"] = pd.Timestamp.now(tz="UTC")
         df["type"] = "phishing"
+        df["source"] = "OpenPhish"
         return df[["indicator", "date", "type", "source"]]
     except Exception as e:
-        st.error(f"PhishTank API error: {e}")
+        st.error(f"OpenPhish API error: {e}")
         return pd.DataFrame()
 
 
@@ -49,35 +41,43 @@ def fetch_threatfox():
     try:
         res = requests.post(url, json=payload, headers=headers, timeout=10)
         data = res.json()
+
         if data.get("query_status") != "ok":
-            st.error("ThreatFox API returned non-ok response")
+            st.error(f"ThreatFox error: {data}")
             return pd.DataFrame()
+
         df = pd.DataFrame(data["data"])
         df["indicator"] = df["ioc"]
         df["type"] = df["threat_type"]
-        df["date"] = df["first_seen"]
+        df["date"] = pd.to_datetime(df["first_seen"], errors="coerce")
         df["source"] = "ThreatFox"
         return df[["indicator", "date", "type", "source"]]
+
     except Exception as e:
         st.error(f"ThreatFox API error: {e}")
         return pd.DataFrame()
+
 
 # -------------------------------
 # LOAD DATA
 # -------------------------------
 
 with st.spinner("Fetching live threat intelligence data..."):
-    phish_df = fetch_phishtank()
+    openphish_df = fetch_openphish()
     threatfox_df = fetch_threatfox()
 
-df = pd.concat([phish_df, threatfox_df], ignore_index=True)
+st.subheader("DEBUG: Raw Data Counts")
+st.write("OpenPhish rows:", len(openphish_df))
+st.write("ThreatFox rows:", len(threatfox_df))
+
+df = pd.concat([openphish_df, threatfox_df], ignore_index=True)
 
 if df.empty:
     st.warning("No data could be loaded from APIs.")
     st.stop()
 
 # Convert date safely
-df["date"] = pd.to_datetime(df["date"], errors="coerce")
+df["date"] = pd.to_datetime(df["date"], errors="coerce", utc=True)
 
 
 # -------------------------------
@@ -129,7 +129,6 @@ with col2:
 with col3:
     min_date = filtered_df["date"].min()
     max_date = filtered_df["date"].max()
-
     if pd.notnull(min_date) and pd.notnull(max_date):
         st.metric("Date Range", f"{min_date.date()} → {max_date.date()}")
     else:
@@ -140,25 +139,15 @@ with col3:
 # -------------------------------
 
 st.subheader("Top Indicator Types")
-
 top_types = filtered_df["type"].value_counts().head(10)
 st.bar_chart(top_types)
 
 # -------------------------------
-# OPTIONAL: RECENT ACTIVITY
+# RECENT ACTIVITY
 # -------------------------------
 
 st.subheader("Recent Activity (Last 7 Days)")
 
-if "date" in filtered_df.columns:
-    cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=7)
-
-    recent_df = filtered_df[
-        filtered_df["date"] >= cutoff
-    ]
-
-    st.metric("Records (Last 7 Days)", len(recent_df))
-else:
-    st.metric("Records (Last 7 Days)", "N/A")
-
+cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=7)
+recent_df = filtered_df[filtered_df["date"] >= cutoff]
 st.metric("Records (Last 7 Days)", len(recent_df))
