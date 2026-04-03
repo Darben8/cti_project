@@ -51,7 +51,7 @@ def fetch_threatfox():
     payload = {
         "query": "get_iocs",
         "limit": 100,
-        "auth_key": auth_key
+        "auth_key": "fed4e03e0b56b36bfc0468217bc4acaeb1153d887d818d2b"
     }
 
     try:
