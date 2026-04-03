@@ -58,8 +58,6 @@ def fetch_threatfox():
         res = requests.post(url, json=payload, headers=headers, timeout=10)
 
         data = res.json()
-        st.write("Query status:", data.get("query_status"))
-        st.write("Full response:", data)
 
         if data.get("query_status") != "ok":
             st.error("ThreatFox API returned non-ok response")
