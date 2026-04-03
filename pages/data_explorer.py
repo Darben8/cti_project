@@ -39,24 +39,35 @@ def fetch_phishtank():
 @st.cache_data(ttl=3600)
 def fetch_threatfox():
     url = "https://threatfox-api.abuse.ch/api/v1/"
-    payload = {"query": "get_iocs", "limit": 100}
+
+    headers = {
+        "User-Agent": "CTI-Streamlit-App/1.0 (Academic Project)",
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+
+    payload = {
+        "query": "get_iocs",
+        "limit": 100
+    }
 
     try:
-        res = requests.post(url, json=payload, timeout=10)
-        data = res.json()
+        res = requests.post(url, data=payload, headers=headers, timeout=10)
 
-        st.write("FULL ThreatFox response:", data)
-        
+        st.write("HTTP Status:", res.status_code)
+
+        data = res.json()
+        st.write("API Status:", data)
+
         if data.get("query_status") != "ok":
+            st.error("ThreatFox API returned non-ok response")
             return pd.DataFrame()
 
         df = pd.DataFrame(data["data"])
 
-        # Normalize safely
         df["indicator"] = df.get("ioc")
         df["type"] = df.get("ioc_type")
         df["date"] = df.get("first_seen")
-
         df["source"] = "ThreatFox"
 
         return df
