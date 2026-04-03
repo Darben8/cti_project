@@ -3,6 +3,10 @@ import pandas as pd
 import requests
 from datetime import datetime
 
+if st.button("Clear Cache"):
+    st.cache_data.clear()
+    st.rerun()
+
 st.title("📊 Dynamic Data Explorer (Live API)")
 
 # -------------------------------
@@ -72,6 +76,8 @@ def fetch_threatfox():
         df["type"] = df["threat_type"]
         df["date"] = df["first_seen"]
         df["source"] = "ThreatFox"
+
+        st.write("ThreatFox sample after mapping:", df[["indicator", "date", "type", "source"]].head(3))
 
         return df[["indicator", "date", "type", "source"]]
 
