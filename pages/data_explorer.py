@@ -3,8 +3,6 @@ import pandas as pd
 import requests
 from datetime import datetime
 
-st.write("Data Explorer page loaded")
-
 st.title("📊 Dynamic Data Explorer (Live API)")
 
 # -------------------------------
