@@ -65,6 +65,9 @@ def fetch_threatfox():
 
         df = pd.DataFrame(data["data"])
 
+        st.write("ThreatFox columns:", df.columns.tolist())
+        st.write("ThreatFox sample:", df.head(2))
+
         df["indicator"] = df["ioc"]
         df["type"] = df["ioc_type"]
         df["date"] = df["first_seen"]
