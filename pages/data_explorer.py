@@ -65,12 +65,12 @@ def fetch_threatfox():
 
         df = pd.DataFrame(data["data"])
 
-        df["indicator"] = df.get("ioc")
-        df["type"] = df.get("ioc_type")
-        df["date"] = df.get("first_seen")
+        df["indicator"] = df["ioc"]
+        df["type"] = df["ioc_type"]
+        df["date"] = df["first_seen"]
         df["source"] = "ThreatFox"
 
-        return df
+        return df[["indicator", "date", "type", "source"]]
 
     except Exception as e:
         st.error(f"ThreatFox API error: {e}")
