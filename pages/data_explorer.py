@@ -39,30 +39,31 @@ def fetch_phishtank():
 @st.cache_data(ttl=3600)
 def fetch_threatfox():
     url = "https://threatfox-api.abuse.ch/api/v1/"
-    payload = {"query": "get_iocs", "limit": 500}
+    payload = {"query": "get_iocs", "limit": 100}
 
     try:
         res = requests.post(url, json=payload, timeout=10)
         data = res.json()
+
+        st.write("ThreatFox API status:", data.get("query_status"))
 
         if data.get("query_status") != "ok":
             return pd.DataFrame()
 
         df = pd.DataFrame(data["data"])
 
-        df["indicator"] = df.get("ioc", None)
-        df["type"] = df.get("ioc_type", df.get("malware", "unknown"))
-        df["date"] = df.get("first_seen", None)
+        # Normalize safely
+        df["indicator"] = df.get("ioc")
+        df["type"] = df.get("ioc_type")
+        df["date"] = df.get("first_seen")
 
         df["source"] = "ThreatFox"
 
-        return df[["id", "indicator", "date", "type", "source"]]
+        return df
 
     except Exception as e:
         st.error(f"ThreatFox API error: {e}")
         return pd.DataFrame()
-
-
 
 
 # -------------------------------
