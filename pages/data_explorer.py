@@ -5,6 +5,17 @@ from datetime import datetime
 
 st.title("📊 Dynamic Data Explorer (Live API)")
 
+st.subheader("📋 Data Source Notes")
+st.info("""
+**PhishTank** returns all currently active verified phishing URLs (typically 5,000–20,000 rows).
+These are real-time indicators, so even a smaller snapshot yields actionable intelligence
+since all records are active threats at time of fetch.
+
+**ThreatFox** is limited to 100 IOCs per request on the free tier. While this is below the
+1,000 row threshold, each record includes malware family, confidence level, and threat type,
+making even 100 records high-signal for threat hunting purposes.
+""")
+
 # -------------------------------
 # API FUNCTIONS
 # -------------------------------
