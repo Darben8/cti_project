@@ -130,7 +130,7 @@ with col3:
     min_date = filtered_df["date"].min()
     max_date = filtered_df["date"].max()
     if pd.notnull(min_date) and pd.notnull(max_date):
-        st.metric("Date Range", f"{min_date.date()} → {max_date.date()}")
+        st.metric("Date Range", f"{min_date.strftime('%m/%d/%y')} – {max_date.strftime('%m/%d/%y')}")    
     else:
         st.metric("Date Range", "N/A")
 
