@@ -70,10 +70,6 @@ with st.spinner("Fetching live threat intelligence data..."):
     phishtank_df = fetch_phishtank()
     threatfox_df = fetch_threatfox()
 
-st.subheader("DEBUG: Raw Data Counts")
-st.write("PhishTank rows:", len(phishtank_df))
-st.write("ThreatFox rows:", len(threatfox_df))
-
 df = pd.concat([phishtank_df, threatfox_df], ignore_index=True)
 
 if df.empty:
