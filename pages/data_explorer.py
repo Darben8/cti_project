@@ -43,7 +43,8 @@ def fetch_threatfox():
     headers = {
         "User-Agent": "CTI-Streamlit-App/1.0 (Academic Project)",
         "Accept": "application/json",
-        "Content-Type": "application/x-www-form-urlencoded"
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Auth-Key": "fed4e03e0b56b36bfc0468217bc4acaeb1153d887d818d2b"
     }
 
     auth_key = "anonymous"
@@ -51,7 +52,6 @@ def fetch_threatfox():
     payload = {
         "query": "get_iocs",
         "limit": 100,
-        "auth_key": "fed4e03e0b56b36bfc0468217bc4acaeb1153d887d818d2b"
     }
 
     try:
