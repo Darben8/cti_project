@@ -155,8 +155,15 @@ st.bar_chart(top_types)
 
 st.subheader("Recent Activity (Last 7 Days)")
 
-recent_df = filtered_df[
-    filtered_df["date"] >= (pd.Timestamp.now() - pd.Timedelta(days=7))
-]
+if "date" in filtered_df.columns:
+    cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=7)
+
+    recent_df = filtered_df[
+        filtered_df["date"] >= cutoff
+    ]
+
+    st.metric("Records (Last 7 Days)", len(recent_df))
+else:
+    st.metric("Records (Last 7 Days)", "N/A")
 
 st.metric("Records (Last 7 Days)", len(recent_df))
