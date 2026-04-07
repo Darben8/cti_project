@@ -1,6 +1,6 @@
-import streamlit as st
 import pandas as pd
 import requests
+import streamlit as st
 from datetime import datetime
 
 st.title("📊 Dynamic Data Explorer (Live API)")
@@ -15,7 +15,6 @@ since all records are active threats at time of fetch.
 1,000 row threshold, each record includes malware family, confidence level, and threat type,
 making even 100 records high-signal for threat hunting purposes.
 """)
-
 # -------------------------------
 # API FUNCTIONS
 # -------------------------------
