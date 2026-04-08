@@ -1,9 +1,14 @@
+import os
+
 import streamlit as st
 import pandas as pd
 import requests
 from datetime import datetime
+from dotenv import load_dotenv
 
-st.title("📊 Dynamic Data Explorer (Live API)")
+load_dotenv()
+
+st.title("📊 Dynamic Data Explorer")
 
 st.subheader("📋 Data Source Notes")
 st.info("""
@@ -39,8 +44,10 @@ def fetch_threatfox():
         "User-Agent": "CTI-Streamlit-App/1.0 (Academic Project)",
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Auth-Key": "fed4e03e0b56b36bfc0468217bc4acaeb1153d887d818d2b"
     }
+    threatfox_key = os.getenv("THREATFOX_API_KEY", "").strip()
+    if threatfox_key:
+        headers["Auth-Key"] = threatfox_key
     payload = {
         "query": "get_iocs",
         "limit": 100

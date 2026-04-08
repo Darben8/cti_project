@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 # Import data validation utilities
 import sys
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent))
-from utils.data_validation import DatasetQualityValidator, generate_dataset_report
+from data_validation import DatasetQualityValidator, generate_dataset_report
 
 load_dotenv()
 
@@ -58,9 +58,12 @@ def fetch_shodan_bank_exposure() -> int:
         return -2
 
     query = 'org:"Bank" port:443 country:"US"'
-    url = f"https://api.shodan.io/shodan/host/count?key={key}&query={query}"
     try:
-        r = requests.get(url, timeout=12)
+        r = requests.get(
+            "https://api.shodan.io/shodan/host/count",
+            params={"key": key, "query": query},
+            timeout=12,
+        )
         r.raise_for_status()
         payload = r.json()
         return int(payload.get("total", 0))

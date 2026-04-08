@@ -53,9 +53,12 @@ def fetch_shodan_bank_exposure() -> int:
         return -2
 
     query = 'org:"Bank" port:443 country:"US"'
-    url = f"https://api.shodan.io/shodan/host/count?key={key}&query={query}"
     try:
-        r = requests.get(url, timeout=12)
+        r = requests.get(
+            "https://api.shodan.io/shodan/host/count",
+            params={"key": key, "query": query},
+            timeout=12,
+        )
         r.raise_for_status()
         payload = r.json()
         return int(payload.get("total", 0))
