@@ -3,8 +3,6 @@ import pandas as pd
 import requests
 from datetime import datetime
 
-st.cache_data.clear()
-
 st.title("📊 Dynamic Data Explorer (Live API)")
 
 # -------------------------------
@@ -14,7 +12,7 @@ st.title("📊 Dynamic Data Explorer (Live API)")
 @st.cache_data(ttl=3600)
 def fetch_phishtank():
     try:
-        df = pd.read_csv("data/phishtank.csv")
+        df = pd.read_csv("pages/phishtank.csv")
         df = df.rename(columns={"first seen": "date"})
         df["source"] = "PhishTank"
         return df[["indicator", "date", "type", "source"]]
@@ -63,6 +61,10 @@ def fetch_threatfox():
 with st.spinner("Fetching live threat intelligence data..."):
     phishtank_df = fetch_phishtank()
     threatfox_df = fetch_threatfox()
+
+st.subheader("DEBUG: Raw Data Counts")
+st.write("PhishTank rows:", len(phishtank_df))
+st.write("ThreatFox rows:", len(threatfox_df))
 
 df = pd.concat([phishtank_df, threatfox_df], ignore_index=True)
 
