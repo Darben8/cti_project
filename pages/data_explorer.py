@@ -14,13 +14,12 @@ st.title("📊 Dynamic Data Explorer (Live API)")
 @st.cache_data(ttl=3600)
 def fetch_phishtank():
     try:
-        df = pd.read_csv("pages/phishtank.csv")
+        df = pd.read_csv("data/phishtank.csv")
         df = df.rename(columns={"first seen": "date"})
         df["source"] = "PhishTank"
         return df[["indicator", "date", "type", "source"]]
     except Exception as e:
         st.error(f"PhishTank file error: {e}")
-        st.write("CSV loaded, rows:", len(df))
         return pd.DataFrame()
 
 
