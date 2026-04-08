@@ -1,10 +1,9 @@
-st.cache_data.clear()
-
-
 import streamlit as st
 import pandas as pd
 import requests
 from datetime import datetime
+
+st.cache_data.clear()
 
 st.title("📊 Dynamic Data Explorer (Live API)")
 
