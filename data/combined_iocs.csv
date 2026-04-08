@@ -1,0 +1,40 @@
+indicator,type,ioc type,source,first seen,tags
+40.69.221.239:443,ipv4,malware,ThreatFox,14/09/2024,Dridex
+14.50.17.15:8443,ipv4,malware,ThreatFox,12/09/2024,Dridex
+74.217.150.200:443,ipv4,malware,ThreatFox,04/09/2024,Dridex
+91.121.45.118:443,ipv4,malware,ThreatFox,23/08/2024,Dridex
+cf44d002356277038c8b9ddf6d5be0...,sha256,malware,ThreatFox,19/03/2024,dridex
+79a3a7441a371606291f8bd47216a...,sha256,malware,ThreatFox,19/03/2024,dridex
+pakistanytrible.top,domain,malware,ThreatFox,16/11/2025,icedid
+geroees.club,domain,malware,ThreatFox,16/11/2025,icedid
+ghosternew.casa,domain,malware,ThreatFox,16/11/2025,icedid
+kengurutrible.top,domain,malware,ThreatFox,16/11/2025,icedid
+f60vinnie75.city,domain,malware,ThreatFox,07/11/2025,gozi
+taileenanahi.company,domain,malware,ThreatFox,07/11/2025,gozi
+h5441eqzey.fun,domain,malware,ThreatFox,07/11/2025,gozi
+102.158.228.15:443,ip:port,malware,ThreatFox,01/03/2026,qakbot
+197.0.81.220:443,ip:port,malware,ThreatFox,27/02/2026,qakbot
+41.62.43.21:443,ip:port,malware,ThreatFox,26/02/2026,qakbot
+201.103.99.105:995,ip:port,malware,ThreatFox,25/02/2026,qakbot
+102.157.54.207:443,ip:port,malware,ThreatFox,24/02/2026,qakbot
+https://instagram-login.vercel.app,url,phishing,PhishTank,31/03/2026,banking phishing
+https://bn-credit.eu.cc,url,phishing,PhishTank,31/03/2026,banking phishing
+https://login.washingtonnewsobserver.com,url,phishing,PhishTank,31/03/2026,banking phishing
+https://login.washingtonnewsobserver.com/login,url,phishing,PhishTank,31/03/2026,banking phishing
+https://login.washingtonnewsobserver.com/auth,url,phishing,PhishTank,31/03/2026,banking phishing
+https://login.washingtonnewsobserver.com/secure,url,phishing,PhishTank,31/03/2026,banking phishing
+https://credit-pichincha-flow.lovable.app,url,phishing,PhishTank,31/03/2026,banking phishing
+https://selfservice-portal-ec.vercel.app,url,phishing,PhishTank,31/03/2026,banking phishing
+https://did.lovable.app,url,phishing,PhishTank,31/03/2026,banking phishing
+https://easybank-kundenseervice-mijndomein.co.nl,url,phishing,PhishTank,31/03/2026,banking phishing
+https://bafybeif6xq4q2z6z3xkq3l6x5p7t2xq7z4p6z3xkq3l6x5p7t2xq7z4p6.ipfs.dweb.link,url,phishing,PhishTank,31/03/2026,banking phishing
+https://h-u-r-login.com,url,phishing,PhishTank,31/03/2026,banking phishing
+https://bou-service-login.net,url,phishing,PhishTank,31/03/2026,banking phishing
+https://spo-bank-login.net,url,phishing,PhishTank,31/03/2026,banking phishing
+https://sum-bank-verify.com,url,phishing,PhishTank,31/03/2026,banking phishing
+https://ggg-banking-secure.net,url,phishing,PhishTank,31/03/2026,banking phishing
+https://prec-bank-login.com,url,phishing,PhishTank,31/03/2026,banking phishing
+https://ww-bank-auth.com,url,phishing,PhishTank,31/03/2026,banking phishing
+https://ww-bank-authenticate.net,url,phishing,PhishTank,31/03/2026,banking phishing
+https://secure-bank-login-verify.com,url,phishing,PhishTank,30/03/2026,banking phishing
+
