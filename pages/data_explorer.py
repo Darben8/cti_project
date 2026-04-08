@@ -21,6 +21,7 @@ def fetch_phishtank():
         return df[["indicator", "date", "type", "source"]]
     except Exception as e:
         st.error(f"PhishTank file error: {e}")
+        st.write("CSV loaded, rows:", len(df))
         return pd.DataFrame()
 
 
