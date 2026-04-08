@@ -155,19 +155,3 @@ st.subheader("Recent Activity (Last 7 Days)")
 cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=7)
 recent_df = filtered_df[filtered_df["date"] >= cutoff]
 st.metric("Records (Last 7 Days)", len(recent_df))
-
-# -------------------------------
-# HOW TO REPRODUCE
-# -------------------------------
-
-with st.expander("ℹ️ How to Reproduce This Analysis"):
-    st.markdown("""
-    1. Clone the repository
-    2. Run `pip install -r requirements.txt`
-    3. Add your ThreatFox API key to `pages/data_explorer.py` where indicated
-    4. Ensure `data/phishtank.csv` is present in the project root
-    5. Run `streamlit run app.py`
-
-    PhishTank data is loaded from a local CSV file. ThreatFox data is fetched live
-    from the API and cached for 1 hour.
-    """)
