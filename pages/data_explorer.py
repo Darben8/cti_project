@@ -5,6 +5,17 @@ from datetime import datetime
 
 st.title("📊 Dynamic Data Explorer (Live API)")
 
+st.subheader("📋 Data Source Notes")
+st.info("""
+**PhishTank** data is loaded from a local CSV file (`data/phishtank.csv`) containing 1,822
+verified phishing URL records. Each record is a community-verified phishing indicator,
+making this a high-confidence static dataset that exceeds the 1,000 row minimum threshold.
+
+**ThreatFox** is limited to 100 IOCs per request on the free tier. While this is below the
+1,000 row threshold, each record includes malware family, confidence level, and threat type,
+making even 100 records high-signal for threat hunting purposes.
+""")
+
 # -------------------------------
 # API FUNCTIONS
 # -------------------------------
@@ -12,7 +23,7 @@ st.title("📊 Dynamic Data Explorer (Live API)")
 @st.cache_data(ttl=3600)
 def fetch_phishtank():
     try:
-        df = pd.read_csv("pages/phishtank.csv")
+        df = pd.read_csv("data/phishtank.csv")
         df = df.rename(columns={"first seen": "date"})
         df["source"] = "PhishTank"
         return df[["indicator", "date", "type", "source"]]
@@ -61,10 +72,6 @@ def fetch_threatfox():
 with st.spinner("Fetching live threat intelligence data..."):
     phishtank_df = fetch_phishtank()
     threatfox_df = fetch_threatfox()
-
-st.subheader("DEBUG: Raw Data Counts")
-st.write("PhishTank rows:", len(phishtank_df))
-st.write("ThreatFox rows:", len(threatfox_df))
 
 df = pd.concat([phishtank_df, threatfox_df], ignore_index=True)
 
@@ -126,9 +133,10 @@ with col3:
     min_date = filtered_df["date"].min()
     max_date = filtered_df["date"].max()
     if pd.notnull(min_date) and pd.notnull(max_date):
-        st.metric("Date Range", f"{min_date.strftime('%m/%d/%y')} – {max_date.strftime('%m/%d/%y')}")
+        st.write("**Date Range**")
+        st.write(f"{min_date.date()} → {max_date.date()}")
     else:
-        st.metric("Date Range", "N/A")
+        st.write("**Date Range:** N/A")
 
 # -------------------------------
 # TOP CATEGORIES
@@ -147,3 +155,19 @@ st.subheader("Recent Activity (Last 7 Days)")
 cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=7)
 recent_df = filtered_df[filtered_df["date"] >= cutoff]
 st.metric("Records (Last 7 Days)", len(recent_df))
+
+# -------------------------------
+# HOW TO REPRODUCE
+# -------------------------------
+
+with st.expander("ℹ️ How to Reproduce This Analysis"):
+    st.markdown("""
+    1. Clone the repository
+    2. Run `pip install -r requirements.txt`
+    3. Add your ThreatFox API key to `pages/data_explorer.py` where indicated
+    4. Ensure `data/phishtank.csv` is present in the project root
+    5. Run `streamlit run app.py`
+
+    PhishTank data is loaded from a local CSV file. ThreatFox data is fetched live
+    from the API and cached for 1 hour.
+    """)
