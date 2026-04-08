@@ -27,7 +27,7 @@ Signature: Otis Service (03/25/2026)
 **Jiwon Chang**
 Milestone 1 Role: Intelligence buy in research
 Milestone 2 Role: Data explorer page development
-Signature: Jiwon Chang (03/25/2026)
+Signature: Jiwon Chang (04/07/2026)
             
 **Supradipta Panta**
 Milestone 1 Role: Code review
