@@ -52,5 +52,5 @@ docker run --rm -p 8501:8501 --env-file .env banking-cti-m1
 - `data/threat_events.csv` - threat events dataset
 
 ## Notes
-- Citations are displayed in APA-style summary format in the app.
+- Citations are displayed in APA-style summary format in pages/References.
 - MITRE ATT&CK technique IDs are included where relevant.
