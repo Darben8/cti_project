@@ -30,6 +30,6 @@ Signature: Jiwon Chang (04/07/2026)
             
 **Supradipta Panta**
 Milestone 1 Role: Code review
-Milestone 2 Role:
-Signature: Supradipta Panta (03/25/2026)
+Milestone 2 Role: Data Collection and Summary
+Signature: Supradipta Panta (04/07/2026)
 """)
