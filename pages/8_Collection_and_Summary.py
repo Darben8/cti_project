@@ -1,7 +1,6 @@
 """Collection Strategy and Data Summary Page"""
 
 import streamlit as st
-import pandas as pd
 
 st.title("Collection Strategy and Data Summary")
 st.caption("Overview of how phishing and malware indicators were collected, processed, and prepared for analysis.")
@@ -15,13 +14,14 @@ with col1:
     st.subheader("Collection Strategy")
     st.markdown(
         """
-The dataset was collected from two open‑source intelligence feeds: **PhishTank** and **ThreatFox**.  
-PhishTank provided verified phishing URLs, while ThreatFox contributed malware‑related indicators such as domains and IP addresses associated with banking‑focused threats.
+The dataset was collected from two open‑source intelligence feeds: **PhishTank** and **ThreatFox**.
 
-Both datasets were downloaded in CSV format and manually reviewed to ensure relevance to the banking sector.  
-Indicators were then cleaned, deduplicated, and normalized into a unified schema to support consistent analysis across the CTI platform.
+- **PhishTank** data was downloaded manually in CSV format and provided verified phishing URLs.  
+- **ThreatFox** indicators were retrieved live through the API and supplied malware‑related infrastructure linked to banking‑focused threats.
 
-The final combined dataset was saved for use in dashboards, enrichment workflows, and threat‑monitoring activities.
+Both sources were cleaned, reviewed, and normalized into a consistent structure to support analysis within the CTI platform.
+
+The combined dataset is used for dashboards, enrichment workflows, and threat‑monitoring activities.
         """
     )
 
@@ -32,27 +32,13 @@ with col2:
     st.subheader("Data Summary")
     st.markdown(
         """
-The combined dataset includes phishing URLs from PhishTank and malware infrastructure indicators from ThreatFox.  
-All entries were standardized into common fields, including **indicator**, **type**, **source**, **first_seen**, and **tags**.
+The unified dataset contains:
 
-The dataset primarily reflects phishing activity targeting banking customers and malware infrastructure linked to families such as **QakBot**, **IcedID**, and **Gozi**.
+- Phishing URLs collected from the PhishTank CSV  
+- Malware‑related indicators retrieved live from the ThreatFox API  
 
-This consolidated dataset supports fraud‑prevention workflows, SOC monitoring, and intelligence enrichment within the CTI platform.
+All entries were standardized into a common schema to ensure consistency across phishing and malware data.
+
+The dataset reflects activity relevant to banking‑related phishing attempts and malware infrastructure, supporting fraud‑prevention workflows, SOC monitoring, and intelligence enrichment.
         """
     )
-
-# -----------------------------
-# FULL-WIDTH SECTION – Load CSV
-# -----------------------------
-st.subheader("Combined IOC Dataset Viewer")
-
-try:
-    df = pd.read_csv("data/combined_iocs.csv")  # Update filename if needed
-    st.dataframe(df, use_container_width=True)
-
-    st.markdown("### Dataset Summary")
-    st.write(f"**Total Records:** {len(df)}")
-
-
-except FileNotFoundError:
-    st.error("❌ Could not find `data/combined_iocs.csv`. Please place the file inside the `data/` folder.")
