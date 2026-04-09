@@ -124,3 +124,11 @@ Used by financial institutions via threat intelligence platforms:
 
 Integrated into MISP and SIEM systems for real-time threat blocking.
 """)
+# BELOW BOTH COLUMNS 
+        st.subheader("Why This Data Source? (Diamond Model)")
+
+        st.image(
+    "images/diamond_model2.png",
+    caption="Diamond Model for Phishing Threats",
+    use_container_width=True
+)
