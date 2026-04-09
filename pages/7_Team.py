@@ -6,10 +6,10 @@ st.markdown("""
 **Jemima Lumbala**
 Milestone 1 Role: Alignment, streamlit app page navigation, threat intel buy-in page
 Milestone 2 Role: Data Source Identification and Justification
-Signature: Jemima Lumbala (03/25/2026) 
+Signature: Jemima Lumbala (03/25/2026)
 
 **Abena Darko**
-Milestone 1Role: Threat Intelligence Research & API integration, dashboard development, and write-up
+Milestone 1 Role: Threat Intelligence Research & API integration, dashboard development, and write-up
 Milestone 2 Role: Ethics and Data Governance, Security-Aware Development Practices, App review
 Signature: Abena Darko (03/25/2026)
 
