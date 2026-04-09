@@ -103,16 +103,7 @@ ThreatFox helps:
 - ~**95 million API requests** answered in a single 30-day period (October 2024)
 - Enables real-time insights for threat hunting and mitigation
 """)
-
-        st.subheader("Why This Data Source? (Diamond Model)")
-        threatfox_diamond = pd.DataFrame({
-            "Element": ["Capability", "Infrastructure"],
-            "Relevance": [
-                "Maps IOCs to malware families (credential theft, fraud)",
-                "Tracks active C2 servers (IPs, domains)",
-            ],
-        })
-        st.table(threatfox_diamond)
+        
 
         st.subheader("Industry Usage")
         st.markdown("""
