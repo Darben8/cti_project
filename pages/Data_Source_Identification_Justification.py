@@ -3,7 +3,7 @@ import streamlit as st
 
 st.title("CTI Data Sources: PhishTank & ThreatFox")
 
-tab1, tab2 = st.tabs(["PhishTank", "ThreatFox"])
+tab1, tab2, tab3 = st.tabs(["PhishTank", "ThreatFox", "Collection & Summary"])
 
 # PhishTank Tab
 with tab1:
@@ -123,3 +123,40 @@ Integrated into MISP and SIEM systems for real-time threat blocking.
     caption="Diamond Model for Phishing Threats",
     use_container_width=True
 )
+
+# Collection & Summary Tab
+with tab3:
+    st.header("Data Collection & Summary")
+
+    col1, col2 = st.columns([1, 1], gap="large")
+    
+    with col1:
+        st.subheader("Collection Strategy")
+        st.markdown(
+        """
+        The dataset was collected from two open‑source intelligence feeds: **PhishTank** and **ThreatFox**.
+
+        - **PhishTank** data was downloaded manually in CSV format and provided verified phishing URLs.  
+        - **ThreatFox** indicators were retrieved live through the API and supplied malware‑related infrastructure linked to banking‑focused threats.
+
+        Both sources were cleaned, reviewed, and normalized into a consistent structure to support analysis within the CTI platform.
+
+        The combined dataset is used for dashboards, enrichment workflows, and threat‑monitoring activities.
+                """
+        )
+
+# RIGHT COLUMN – Data Summary
+with col2:
+    st.subheader("Data Summary")
+    st.markdown(
+        """
+        The unified dataset contains:
+
+        - Phishing URLs collected from the PhishTank CSV
+        - Malware‑related indicators retrieved live from the ThreatFox API
+
+        All entries were standardized into a common schema to ensure consistency across phishing and malware data.
+
+        The dataset reflects activity relevant to banking‑related phishing attempts and malware infrastructure, supporting fraud‑prevention workflows, SOC monitoring, and intelligence enrichment.
+                """
+        )
