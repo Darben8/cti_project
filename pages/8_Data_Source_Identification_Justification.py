@@ -59,7 +59,7 @@ Integrated into SIEM and fraud detection systems.
         st.subheader("Why This Data Source? (Diamond Model)")
 
         st.image(
-    "images/diamond_model.png",
+    "images/Diamond_model.png",
     caption="Diamond Model for Phishing Threats",
     use_container_width=True
 )
@@ -119,7 +119,7 @@ Integrated into MISP and SIEM systems for real-time threat blocking.
         st.subheader("Why This Data Source? (Diamond Model)")
 
         st.image(
-    "images/diamond_model2.png",
+    "images/Diamond_model2.png",
     caption="Diamond Model for Phishing Threats",
     use_container_width=True
 )
