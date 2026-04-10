@@ -1,6 +1,6 @@
-# CTI Milestone 1 - U.S. Banking Streamlit App
+# CTI - U.S. Banking Streamlit App
 
-This repository now includes a multipage Streamlit application for Milestone 1 focused on cyber threat intelligence in the U.S. banking sector.
+This repository now includes a multipage Streamlit application focused on cyber threat intelligence in the U.S. banking sector.
 
 ## Included Milestone 1 Sections
 - Introduction and industry background
