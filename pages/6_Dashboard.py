@@ -275,28 +275,28 @@ with col4:
     coverage = "N/A" if valid_dates.empty else f"{valid_dates.min().date()} to {valid_dates.max().date()}"
     st.metric("Date Coverage", coverage)
 
-st.subheader("Timeline by Source")
-timeline_df = (
-    filtered_df.dropna(subset=["date"])
-    .assign(date_day=lambda frame: frame["date"].dt.date)
-    .groupby(["date_day", "source"], as_index=False)
-    .size()
-    .rename(columns={"size": "record_count"})
-)
-if timeline_df.empty:
-    st.info("No dated records available for the current filters.")
-else:
-    fig_timeline = px.line(
-        timeline_df,
-        x="date_day",
-        y="record_count",
-        color="source",
-        markers=True,
-        color_discrete_map=SOURCE_COLORS,
-        labels={"date_day": "Date", "record_count": "Record Count", "source": "Source"},
-    )
-    fig_timeline.update_layout(plot_bgcolor="#fffaf2", paper_bgcolor="#fffaf2")
-    st.plotly_chart(fig_timeline, use_container_width=True)
+# st.subheader("Timeline by Source")
+# timeline_df = (
+#     filtered_df.dropna(subset=["date"])
+#     .assign(date_day=lambda frame: frame["date"].dt.date)
+#     .groupby(["date_day", "source"], as_index=False)
+#     .size()
+#     .rename(columns={"size": "record_count"})
+# )
+# if timeline_df.empty:
+#     st.info("No dated records available for the current filters.")
+# else:
+#     fig_timeline = px.line(
+#         timeline_df,
+#         x="date_day",
+#         y="record_count",
+#         color="source",
+#         markers=True,
+#         color_discrete_map=SOURCE_COLORS,
+#         labels={"date_day": "Date", "record_count": "Record Count", "source": "Source"},
+#     )
+#     fig_timeline.update_layout(plot_bgcolor="#fffaf2", paper_bgcolor="#fffaf2")
+#     st.plotly_chart(fig_timeline, use_container_width=True)
 
 left_col, right_col = st.columns(2)
 
