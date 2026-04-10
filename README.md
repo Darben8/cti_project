@@ -12,11 +12,21 @@ This repository now includes a multipage Streamlit application for Milestone 1 f
 - Intelligence buy-in section
 - "What's New" milestone checklist in the app
 
+## Included Milestone 2 Sections
+- Expanded dashboard with multiple CTI visualizations and critical asset alignment
+- Data explorer for filtered inspection of combined threat intelligence records
+- Data source identification and justification for PhishTank and ThreatFox
+- Collection strategy and data summary for how source data was gathered and normalized
+- Team roles and milestone contribution updates
+- Support for live and local CTI data sources including PhishTank, ThreatFox, ransomware.live, and Shodan
+- Local collection script for exporting Shodan exposure metadata and live ThreatFox records
+
 ## Data Sources
 - PhishTank (open source)
 - ransomware.live (open source)
 - Shodan (API key via `.env`)
-- Approved class input figures (Verizon / IBM / Deloitte)
+- Threatfox (API key via '.env')
+
 
 ## Local Run
 ```bash
@@ -39,17 +49,25 @@ docker run --rm -p 8501:8501 --env-file .env banking-cti-m1
 - `README.md` - project overview and setup instructions
 - `requirements.txt` - Python dependencies
 - `Dockerfile` - container setup for the app
+- `images/Diamond_model.png` - Diamond Model image for PhishTank/source justification content
+- `images/Diamond_model2.png` - Diamond Model image for ThreatFox/source justification content
 - `pages/1_Industry_Background.py` - industry background page
 - `pages/2_Threat_Trends.py` - threat trends and threat intelligence overview
 - `pages/3_Critical_Assets.py` - critical assets page
 - `pages/4_Diamond_Models.py` - Diamond Model analysis page
-- `pages/5_Dashboard_Starter.py` - dynamic dashboard page
-- `pages/6_Intel_Buyin.py` - intelligence buy-in page
-- `pages/7_Team.py` - team page
+- `pages/5_Intel_Buyin.py` - intelligence buy-in page
+- `pages/6_Dashboard.py` - main dashboard page combining charts, source views, and asset alignment
+- `pages/7_Data_Explorer.py` - data exploration page for filtered source inspection
+- `pages/8_Data_Source_Identification_Justification.py` - data source background, justification, and collection summary page
+- `pages/9_References.py` - references and citations page
+- `pages/10_Team.py` - team roles and contributions page
 - `pages/Stakeholders.py` - stakeholders page
-- `pages/data_explorer.py` - data explorer page
+- `data/data_collection.py` - local collection script for Shodan and ThreatFox exports
 - `data/critical_assets.csv` - critical assets dataset
+- `data/combined_iocs.csv` - combined IOC dataset used by dashboard and data explorer pages
+- `data/phishtank.csv` - local PhishTank IOC dataset
 - `data/threat_events.csv` - threat events dataset
+- `changes/` - working copies and alternate versions retained during development
 
 ## Notes
 - Citations are displayed in APA-style summary format in pages/References.
