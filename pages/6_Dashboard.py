@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 import requests
 import streamlit as st
 from dotenv import load_dotenv
+import plotly.express as px
 
 load_dotenv()
 
@@ -248,6 +249,147 @@ if records_df.empty:
     st.warning("No dashboard records could be loaded.")
     st.stop()
 
+with st.expander("Milestone 3 Deliverables"):
+    st.subheader("Preliminary Visualization: Infrastructure Exposure")
+#################################################################################
+    # 1. Ensure date is datetime (Fixes the .dt error from earlier)
+    df_shodan = pd.read_csv('data/threat_events.csv')
+    df_shodan['date'] = pd.to_datetime(df_shodan['date'])
+
+    with st.expander("View Threats by Density & Severity"):
+
+        # 2. Create the Scatter Plot
+        # x: Time of incident
+        # y: Type of threat or asset
+        # size: Number of incidents (to make it a 'bubble' chart)
+        # color: Severity level
+        fig = px.scatter(
+            df_shodan, 
+            x="date", 
+            y="threat_type",
+            size="incident_count", 
+            color="severity",
+            hover_name="target_asset",
+            title="Threat Density & Severity Over Time",
+            labels={"date": "Discovery Date", "threat_type": "Type of Threat"},
+            template="plotly_white" # This helps remove background colors
+        )
+
+        # 3. Remove background color specifically from this chart object
+        fig.update_layout({
+            'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+            'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+        })
+
+        st.plotly_chart (fig, use_container_width=True)
+
+###############################################################################
+    df_shodan=pd.read_csv('data/threat_events.csv')
+
+    # Create the Chart: Port Distribution
+    fig = px.pie(df_shodan, 
+                names='threat_type', 
+                title='Distribution of Threat Types')
+    with st.expander("View Threats per Exposed Ports (Shodan)", expanded=False):
+        st.plotly_chart(fig, use_container_width=True)
+
+
+##############################################################################
+    # Load data
+    df_shodan = pd.read_csv('data/threat_events.csv')
+
+    # Convert date column
+    df_shodan['date'] = pd.to_datetime(df_shodan['date'])
+
+    with st.expander("View Threats per Critical Asset", expanded=False):
+
+        # ---- Date Filter ----
+        date_range = st.date_input(
+            "Select Date Range",
+            [
+                df_shodan['date'].min().date(),
+                df_shodan['date'].max().date()
+            ]
+        )
+
+        # ---- Categorical Filters ----
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            threat_types = st.multiselect(
+                "Threat Type",
+                sorted(df_shodan['threat_type'].unique()),
+                default=sorted(df_shodan['threat_type'].unique())
+            )
+
+        with col2:
+            regions = st.multiselect(
+                "Region",
+                sorted(df_shodan['region'].unique()),
+                default=sorted(df_shodan['region'].unique())
+            )
+
+        with col3:
+            severities = st.multiselect(
+                "Severity",
+                sorted(df_shodan['severity'].unique()),
+                default=sorted(df_shodan['severity'].unique())
+            )
+
+        assets = st.multiselect(
+            "Target Asset",
+            sorted(df_shodan['target_asset'].unique()),
+            default=sorted(df_shodan['target_asset'].unique())
+        )
+
+        sources = st.multiselect(
+            "Source",
+            sorted(df_shodan['source'].unique()),
+            default=sorted(df_shodan['source'].unique())
+        )
+
+        # ---- Top N Slider ----
+        top_n = st.slider(
+            "Show Top N Assets",
+            min_value=1,
+            max_value=len(df_shodan['target_asset'].unique()),
+            value=5
+        )
+
+        # ---- Apply Filters ----
+        filtered_df = df_shodan[
+            (df_shodan['date'].dt.date >= date_range[0]) &
+            (df_shodan['date'].dt.date <= date_range[1]) &
+            (df_shodan['threat_type'].isin(threat_types)) &
+            (df_shodan['region'].isin(regions)) &
+            (df_shodan['severity'].isin(severities)) &
+            (df_shodan['target_asset'].isin(assets)) &
+            (df_shodan['source'].isin(sources))
+        ]
+
+        # ---- Aggregate and Select Top N Assets ----
+        top_assets_df = (
+            filtered_df
+            .groupby('target_asset', as_index=False)['incident_count']
+            .sum()
+            .sort_values(by='incident_count', ascending=False)
+            .head(top_n)
+        )
+
+        # ---- Pie Chart ----
+        fig = px.pie(
+            top_assets_df,
+            names='target_asset',
+            values='incident_count',
+            title=f'Top {top_n} Threatened Critical Assets'
+        )
+
+        fig.update_layout(height=600)
+
+        st.plotly_chart(fig, use_container_width=True)
+
+st.divider()
+
 source_options = sorted(records_df["source"].dropna().unique().tolist())
 selected_sources = st.multiselect(
     "Filter by data source",
@@ -325,6 +467,8 @@ with left_col:
 with right_col:
     st.subheader("Ransomware Activity Over Time")
     ransomware_df = filtered_df[filtered_df["source"] == "ransomware.live"].dropna(subset=["date"]).copy()
+    # Convert the date column to datetime objects
+    ransomware_df['date'] = pd.to_datetime(ransomware_df['date'])   
     if ransomware_df.empty:
         st.info("No ransomware.live records available for the current filters.")
     else:
