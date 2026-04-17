@@ -10,12 +10,12 @@ st.set_page_config(
 
 CHASE_BLUE = "#117ACA"
 DARK_BLUE = "#0B3A69"
-LIGHT_BG = "#F4F8FC"
+LIGHT_BG = "#2C2CE7"
 
 st.markdown(
     f"""
     <style>
-    .stApp {{ background-color: {LIGHT_BG}; }}
+    .stApp {{ background-color: transparent; }}
     h1, h2, h3 {{ color: {DARK_BLUE}; }}
     [data-testid="stMetricValue"] {{ color: {CHASE_BLUE}; }}
     .block-container {{ padding-top: 1.2rem; }}
@@ -26,27 +26,30 @@ st.markdown(
 
 st.title("🏦 Cyber Threat Intelligence Platform: U.S. Banking")
 #st.caption("Milestone 1 - Industry baseline, threat trends, diamond models, and dashboard starter.")
+st.info("Project Milestone Updates.")
 
-with st.container(border=True):
-    st.subheader("✅ What's Changed in Milestone 1")
-    st.checkbox("We tightened our industry focus to the banking sector within the finance industry", value=True, disabled=True)
-    st.checkbox("We focused on banking in North America (United States)", value=True, disabled=True)
-    st.checkbox("We removed AZSecure as a relevant data source", value=True, disabled=True)
-    st.checkbox(
-        "We prioritized top banking threats as credential theft then phishing, followed by ransomware and web application attacks",
-        value=True,
-        disabled=True,
-    )
+with st.expander("Milestone 1", expanded=False):
+    with st.container(border=True):
+        st.subheader("✅ What's Changed in Milestone 1")
+        st.checkbox("We tightened our industry focus to the banking sector within the finance industry", value=True, disabled=True)
+        st.checkbox("We focused on banking in North America (United States)", value=True, disabled=True)
+        st.checkbox("We removed AZSecure as a relevant data source", value=True, disabled=True)
+        st.checkbox(
+            "We prioritized top banking threats as credential theft then phishing, followed by ransomware and web application attacks",
+            value=True,
+            disabled=True,
+        )
+with st.expander("Milestone 2", expanded=False):
+    with st.container(border=True):
+        st.subheader("✅ What's New in Milestone 2")
+        st.checkbox("We created the data explorer", value=True, disabled=True)
+        st.checkbox("We updated team roles in the pages subfolder", value=True, disabled=True)
+        st.checkbox("We included Threatfox as a datasource and worked with APIs rather than synthetic data", value=True, disabled=True)
+        st.checkbox("We updated the dashboard starter with new filters, metrics, data and charts that correlate banking assets with threat indicators", value=True, disabled=True)
+        st.checkbox("New supporting pages were added around collection strategy, data source identification/justification, and references.", value=True, disabled=True)
+        st.checkbox("We download threat intelligence data from phishtank and  in the data folder", value=True, disabled=True)
 
-with st.container(border=True):
-    st.subheader("✅ What's New in Milestone 2")
-    st.checkbox("We created the data explorer", value=True, disabled=True)
-    st.checkbox("We updated team roles in the pages subfolder", value=True, disabled=True)
-    st.checkbox("We included Threatfox as a datasource and worked with APIs rather than synthetic data", value=True, disabled=True)
-    st.checkbox("We updated the dashboard starter with new filters, metrics, data and charts that correlate banking assets with threat indicators", value=True, disabled=True)
-    st.checkbox("New supporting pages were added around collection strategy, data source identification/justification, and references.", value=True, disabled=True)
-    st.checkbox("We download threat intelligence data from phishtank and  in the data folder", value=True, disabled=True)
-
+st.divider()
 
 col1, col2 = st.columns([1.2, 1], gap="large")
 
