@@ -1,0 +1,6 @@
+metric,value
+ransomware_live_iocs,1368
+threatfox_iocs,1505
+exact_cross_source_matches,0
+group_family_threatfox_matches,0
+network_components,2
