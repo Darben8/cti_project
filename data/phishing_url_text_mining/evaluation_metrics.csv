@@ -1,0 +1,11 @@
+metric,value,interpretation
+url_count,3120.0,Number of finance-focused PhishTank URLs analyzed.
+banking_keyword_url_pct,23.173076923076923,Percent of URLs containing at least one banking/finance keyword.
+suspicious_tld_url_pct,16.794871794871792,Percent of URLs using a TLD commonly seen in abuse-heavy phishing infrastructure.
+https_url_pct,93.36538461538461,Percent of URLs using HTTPS; phishing sites often use HTTPS to appear legitimate.
+tfidf_vocabulary_terms,25.0,Number of high-scoring descriptive URL terms exported for analyst review.
+kmeans_clusters,5.0,Number of descriptive URL-pattern clusters used.
+silhouette_score,0.24274737994830534,Higher is better; measures cluster separation and cohesion.
+davies_bouldin_score,2.298945707673416,Lower is better; measures average similarity between clusters.
+calinski_harabasz_score,278.8346562609715,Higher is better; measures between-cluster separation versus within-cluster spread.
+cluster_inertia,2054.879959076482,Lower is tighter for a fixed k; not comparable across different k without an elbow test.
