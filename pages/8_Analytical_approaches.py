@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+from pandas.errors import EmptyDataError
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
@@ -37,7 +38,10 @@ def load_csv(name: str) -> pd.DataFrame:
     path = CORRELATION_DIR / name
     if not path.exists():
         return pd.DataFrame()
-    return pd.read_csv(path)
+    try:
+        return pd.read_csv(path)
+    except EmptyDataError:
+        return pd.DataFrame()
 
 
 def selected_relations(view: str) -> set[str]:
