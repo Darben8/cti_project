@@ -19,7 +19,7 @@ team_members = [
         "milestone_1": "Alignment, streamlit app page navigation, threat intel buy-in page",
         "milestone_2": "Data Source Identification and Justification",
         "milestone_3": "Interactive anlytics panel development and write-up",
-        "signature": "Jemima Lumbala (04/09/2026)",
+        "signature": "Jemima Lumbala (04/22/2026)",
     },
     {
         "name": "Abena Darko",
@@ -39,15 +39,15 @@ team_members = [
         "name": "Otis Service",
         "milestone_1": "Project Manager, Industry Research, Streamlit app development, and write-up",
         "milestone_2": "Data validation, data explorer",
-        "milestone_3": "",
-        "signature": "Otis Service (04/09/2026)",
+        "milestone_3": "CTI Visualization development and write-up",
+        "signature": "Otis Service (04/23/2026)",
     },
     {
         "name": "Jiwon Chang",
         "milestone_1": "Intelligence buy in research",
         "milestone_2": "Data explorer page development",
-        "milestone_3": "",
-        "signature": "Jiwon Chang (04/07/2026)",
+        "milestone_3": "Validation and error analysis",
+        "signature": "Jiwon Chang (04/23/2026)",
     },
     {
         "name": "Supradipta Panta",
