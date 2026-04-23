@@ -962,7 +962,108 @@ with justification_tab:
         "Exact IOC overlap is treated as high-confidence correlation. Group/family matching is lower confidence "
         "because ransomware group names and malware-family labels can use aliases. In the current local ThreatFox "
         "subset, no exact IOC or group-family matches were found, which suggests the available ThreatFox data may "
-        "cover malware families such as botnets rather than the ransomware groups observed in the finance victim set. "
-        "A simple validation method is to manually spot-check high-risk groups, top URL keywords, and unmatched "
-        "ThreatFox malware-family labels."
+        "cover malware families such as botnets rather than the ransomware groups observed in the finance victim set."
     )
+
+    st.markdown("#### Assumptions")
+    st.table(
+        pd.DataFrame([
+            {
+                "Assumption": "Group name normalization resolves aliases correctly",
+                "Applies To": "Event Correlation",
+                "Risk if Wrong": "Missed cross-source matches; groups counted separately",
+            },
+            {
+                "Assumption": "Phishing URLs follow Latin-script / English patterns",
+                "Applies To": "Text Mining",
+                "Risk if Wrong": "Non-ASCII or IDN homograph URLs evade keyword matching",
+            },
+            {
+                "Assumption": "URL feature vectors are roughly spherical for K-Means",
+                "Applies To": "K-Means Clustering",
+                "Risk if Wrong": "Elongated clusters produce low silhouette scores and poor separation",
+            },
+            {
+                "Assumption": "ThreatFox local subset is representative of finance-sector threats",
+                "Applies To": "Event Correlation",
+                "Risk if Wrong": "Zero overlap counts do not reflect true absence of shared IOCs",
+            },
+        ])
+    )
+
+    st.markdown("#### Limitations")
+    st.table(
+        pd.DataFrame([
+            {
+                "Limitation": "ThreatFox subset covers botnets/malware families, not finance ransomware groups",
+                "Impact": "Exact IOC overlap and group-family match counts are currently zero",
+            },
+            {
+                "Limitation": "Keyword lists (banking, suspicious, brand) are static",
+                "Impact": "Novel phishing vocabulary introduced after list creation is missed",
+            },
+            {
+                "Limitation": "K-Means requires a pre-chosen k; no ground-truth cluster labels exist",
+                "Impact": "Optimal k is estimated via silhouette/Davies-Bouldin, not verified externally",
+            },
+            {
+                "Limitation": "Ransomware.live data is scraped and may contain inconsistent group naming",
+                "Impact": "Some alias normalization may fail for lesser-known groups",
+            },
+        ])
+    )
+
+    st.markdown("#### Error Sources")
+    st.table(
+        pd.DataFrame([
+            {
+                "Error Source": "False positives in keyword matching",
+                "Example": "Terms like 'pay', 'card', 'ing' appear in legitimate banking URLs",
+                "Mitigation": "Tune keyword lists; add whitelist for known-good domains",
+            },
+            {
+                "Error Source": "Fuzzy group/family matching misses",
+                "Example": "Lesser-known groups not represented in ThreatFox alias fields",
+                "Mitigation": "Expand alias table; incorporate MISP galaxy cluster mappings",
+            },
+            {
+                "Error Source": "IOC formatting inconsistencies",
+                "Example": "Trailing slash, protocol prefix, or case differences in URLs",
+                "Mitigation": "Normalize all indicators to lowercase, strip trailing slashes pre-join",
+            },
+            {
+                "Error Source": "Temporal mismatch between data sources",
+                "Example": "Ransomware.live victims dated 2024 vs. ThreatFox IOCs from 2022",
+                "Mitigation": "Filter by recency; weight recent IOCs more heavily in risk scoring",
+            },
+        ])
+    )
+
+    st.markdown("#### Validation Methods")
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.info(
+            "**Hold-Out Spot-Check**\n\n"
+            "Manually review the top 10–15 highest-risk ransomware groups and the top 20 TF-IDF "
+            "terms. Confirm that groups correspond to known finance-targeting actors (e.g., LockBit, "
+            "BlackCat) and that top keywords match verified phishing vocabulary."
+        )
+        st.info(
+            "**K-Means Internal Metrics**\n\n"
+            "Silhouette score, Davies-Bouldin score, and Calinski-Harabasz score are computed for "
+            "the chosen k. A silhouette score above 0.3 and a low Davies-Bouldin score indicate "
+            "meaningful cluster separation."
+        )
+    with col_b:
+        st.info(
+            "**Cross-Source Consistency Check**\n\n"
+            "Groups appearing in both ransomware.live and ThreatFox (via exact IOC or family match) "
+            "are treated as high-confidence. Discrepancies between sources are flagged in the "
+            "supporting tables on the Interactive Analytics Panel."
+        )
+        st.info(
+            "**False-Positive Sampling**\n\n"
+            "A random sample of 50 URLs flagged as containing banking keywords is reviewed manually "
+            "to estimate the false-positive rate. Results are used to tune keyword list specificity "
+            "and update the operational false-positive rate metric."
+        )
