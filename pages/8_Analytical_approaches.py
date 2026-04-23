@@ -922,6 +922,52 @@ with justification_tab:
         )
     )
 
+    st.markdown("### Approach 3: KMeans Clustering")
+    st.table(
+        pd.DataFrame(
+            [
+                {
+                    "Rubric Item": "Why selected",
+                    "Project Response": (
+                        "Clustering is a great analytical method to group similar types of data together. "
+                        "We used KMeans specifically because it is an efficient clustering algorithm for paritional clustering."
+                    ),
+                },
+                {
+                    "Rubric Item": "Data sources",
+                    "Project Response": (
+                        "data/filtered_iocs_threatfox.csv"
+                    ),
+                },
+                {
+                    "Rubric Item": "Major steps",
+                    "Project Response": (
+                        "The data read from the csv cannot be read directly so it is converted into numbers along with other information like how many groups kmeans will need to create "
+                        "KMeans looks at all the records and tries to group similar ones together. It starts with a rough guess, keeps refining the groups, and repeats until the groups stop changing."
+                    ),
+                },
+                {
+                    "Rubric Item": "Why those steps",
+                    "Project Response": (
+                        "The raw columns aren't directly usable by KMeans, so they get transformed into numeric features the algorithm can understand."
+                        "The iterative refinement process is how KMeans finds clusters that are more cohesive and separated. Feature extraction makes URL structure measurable."
+                    ),
+                },
+                {
+                    "Rubric Item": "Tools used",
+                    "Project Response": "Python, pandas, scikit-learn, Streamlit."
+                },
+                {
+                    "Rubric Item": "Evaluation methods",
+                    "Project Response": (
+                        "K-Means metrics such as silhouette score, Davies-Bouldin "
+                        "score, Calinski-Harabasz score, and inertia."
+                    ),
+                },
+            ]
+        )
+    )
+    
     st.markdown("### Operational Metrics")
     st.write(
         "These analytics support CTI program evaluation by improving alert precision and reducing mean time "
