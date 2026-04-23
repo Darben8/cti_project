@@ -52,41 +52,11 @@ with st.container(border=True):
 with st.container(border=True):
      with st.expander("📌 Milestone 3"):
         st.subheader("✅ Milestone 3: New Features")
-        st.checkbox("Analytical Approaches: Phishing URL Text Mining & Ransomware Event Correlation", value=True, disabled=True)
-        st.checkbox("Interactive Analytics Panel: Multi-source filtering with unique-key state management", value=True, disabled=True)
+        st.checkbox("Analytical Approaches: Phishing URL Text Mining, Ransomware Event Correlation and Kmeans clustering with threatfox data", value=True, disabled=True)
+        st.checkbox("Interactive Analytics Panel: Multi-source filtering of analytics with unique-key state management", value=True, disabled=True)
         st.checkbox("Preliminary Visualizations: Temporal trends and threat distribution with process/value justifications", value=True, disabled=True)
         st.checkbox("Operational Metrics: Implementation of MTTD reduction estimates and Indicator Precision tracking", value=True, disabled=True)
         st.checkbox("Enhanced UI: Wide-mode dashboard layout and automated EST refresh timestamps", value=True, disabled=True)
         st.checkbox("Validation: Added error analysis and data limitation documentation", value=True, disabled=True)
-
-#st.success("Milestone 3 requirements fully implemented and documented in the Dashboard.")
-
-st.divider()
-
-col1, col2 = st.columns([1.2, 1], gap="large")
-
-with col1:
-    st.subheader("Ethics and Data Governance")
-    st.markdown(
-        """
-   1) All data comes from approved documented sources. No stolen or unauthorized data is used.
-
-   2) Only data relevant to the U.S. banking sector is included.
-
-   3) Our app does not expose sensitive or proprietary information, or any details that could increase operational risk.
-        """)
-
-with col2:
-    st.subheader("Security-Aware Development Practices")
-    st.markdown(
-        """
-1) Secrets are stored in environment variables and not hardcoded in the codebase.
-
-2) We implemented request timeouts and error handling for all API calls to prevent hanging and ensure graceful failure.
-
-3) We use a requirements.txt file to manage dependencies and ensure consistent environments across development and deployment.
-""")
-
-
 
 st.info("Use the sidebar to navigate to Industry Background, Threat Trends, Critical Assets, Diamond Models, and Dashboard pages.")

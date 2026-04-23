@@ -9,9 +9,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 st.title("📊 Dynamic Data Explorer")
+explorer_tab, ethics_tab = st.tabs(
+    ["Dynamic Data Explorer", "Ethics & Security"]
+)
 
-st.subheader("📋 Data Source Notes")
-st.info("""
+with explorer_tab:
+    st.subheader("📋 Data Source Notes")
+    st.info("""
 **PhishTank** data is loaded from a local CSV file (`data/phishtank.csv`) containing 1,822
 verified phishing URL records. Each record is a community-verified phishing indicator,
 making this a high-confidence static dataset that exceeds the 1,000 row minimum threshold.
@@ -76,89 +80,115 @@ def fetch_threatfox():
 # LOAD DATA
 # -------------------------------
 
-with st.spinner("Fetching live threat intelligence data..."):
-    phishtank_df = fetch_phishtank()
-    threatfox_df = fetch_threatfox()
+with explorer_tab:
+    with st.spinner("Fetching live threat intelligence data..."):
+        phishtank_df = fetch_phishtank()
+        threatfox_df = fetch_threatfox()
 
-df = pd.concat([phishtank_df, threatfox_df], ignore_index=True)
+    df = pd.concat([phishtank_df, threatfox_df], ignore_index=True)
 
-if df.empty:
-    st.warning("No data could be loaded from APIs.")
-    st.stop()
+    if df.empty:
+        st.warning("No data could be loaded from APIs.")
+        st.stop()
 
-# Convert date safely
-df["date"] = pd.to_datetime(df["date"], errors="coerce", utc=True)
+    # Convert date safely
+    df["date"] = pd.to_datetime(df["date"], errors="coerce", utc=True)
 
+    # -------------------------------
+    # FILTERS
+    # -------------------------------
 
-# -------------------------------
-# FILTERS
-# -------------------------------
+    st.sidebar.header("Filter Options")
 
-st.sidebar.header("Filter Options")
+    sources = st.sidebar.multiselect(
+        "Select Data Source",
+        options=df["source"].unique(),
+        default=df["source"].unique()
+    )
 
-sources = st.sidebar.multiselect(
-    "Select Data Source",
-    options=df["source"].unique(),
-    default=df["source"].unique()
-)
+    types = st.sidebar.multiselect(
+        "Select Indicator Type",
+        options=df["type"].dropna().unique(),
+        default=df["type"].dropna().unique()
+    )
 
-types = st.sidebar.multiselect(
-    "Select Indicator Type",
-    options=df["type"].dropna().unique(),
-    default=df["type"].dropna().unique()
-)
+    filtered_df = df[
+        (df["source"].isin(sources)) &
+        (df["type"].isin(types))
+    ]
 
-filtered_df = df[
-    (df["source"].isin(sources)) &
-    (df["type"].isin(types))
-]
+    # -------------------------------
+    # SAMPLE DATA
+    # -------------------------------
 
+    st.subheader("Sample Records")
+    st.dataframe(filtered_df.head(50), use_container_width=True)
 
-# -------------------------------
-# SAMPLE DATA
-# -------------------------------
+    # -------------------------------
+    # SUMMARY STATS
+    # -------------------------------
 
-st.subheader("Sample Records")
-st.dataframe(filtered_df.head(50), use_container_width=True)
+    st.subheader("Summary Statistics")
 
-# -------------------------------
-# SUMMARY STATS
-# -------------------------------
+    col1, col2, col3 = st.columns(3)
 
-st.subheader("Summary Statistics")
+    with col1:
+        st.metric("Total Records", len(filtered_df))
 
-col1, col2, col3 = st.columns(3)
+    with col2:
+        unique_indicators = filtered_df["indicator"].nunique()
+        st.metric("Unique Indicators", unique_indicators)
 
-with col1:
-    st.metric("Total Records", len(filtered_df))
+    with col3:
+        min_date = filtered_df["date"].min()
+        max_date = filtered_df["date"].max()
+        if pd.notnull(min_date) and pd.notnull(max_date):
+            st.write("**Date Range**")
+            st.write(f"{min_date.date()} → {max_date.date()}")
+        else:
+            st.write("**Date Range:** N/A")
 
-with col2:
-    unique_indicators = filtered_df["indicator"].nunique()
-    st.metric("Unique Indicators", unique_indicators)
+    # -------------------------------
+    # TOP CATEGORIES
+    # -------------------------------
 
-with col3:
-    min_date = filtered_df["date"].min()
-    max_date = filtered_df["date"].max()
-    if pd.notnull(min_date) and pd.notnull(max_date):
-        st.write("**Date Range**")
-        st.write(f"{min_date.date()} → {max_date.date()}")
-    else:
-        st.write("**Date Range:** N/A")
+    st.subheader("Top Indicator Types")
+    top_types = filtered_df["type"].value_counts().head(10)
+    st.bar_chart(top_types)
 
-# -------------------------------
-# TOP CATEGORIES
-# -------------------------------
+    # -------------------------------
+    # RECENT ACTIVITY
+    # -------------------------------
 
-st.subheader("Top Indicator Types")
-top_types = filtered_df["type"].value_counts().head(10)
-st.bar_chart(top_types)
+    st.subheader("Recent Activity (Last 7 Days)")
 
-# -------------------------------
-# RECENT ACTIVITY
-# -------------------------------
+    cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=7)
+    recent_df = filtered_df[filtered_df["date"] >= cutoff]
+    st.metric("Records (Last 7 Days)", len(recent_df))
 
-st.subheader("Recent Activity (Last 7 Days)")
+with ethics_tab:
+    col1, col2 = st.columns([1.2, 1], gap="large")
 
-cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=7)
-recent_df = filtered_df[filtered_df["date"] >= cutoff]
-st.metric("Records (Last 7 Days)", len(recent_df))
+    with col1:
+        st.subheader("Ethics and Data Governance")
+        st.markdown(
+            """
+1) All data comes from approved documented sources. No stolen or unauthorized data is used.
+
+2) Only data relevant to the U.S. banking sector is included.
+
+3) Our app does not expose sensitive or proprietary information, or any details that could increase operational risk.
+"""
+        )
+
+    with col2:
+        st.subheader("Security-Aware Development Practices")
+        st.markdown(
+            """
+1) Secrets are stored in environment variables and not hardcoded in the codebase.
+
+2) We implemented request timeouts and error handling for all API calls to prevent hanging and ensure graceful failure.
+
+3) We use a requirements.txt file to manage dependencies and ensure consistent environments across development and deployment.
+"""
+        )
