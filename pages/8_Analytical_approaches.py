@@ -1040,30 +1040,8 @@ with justification_tab:
     )
 
     st.markdown("#### Validation Methods")
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.info(
-            "**Hold-Out Spot-Check**\n\n"
-            "Manually review the top 10–15 highest-risk ransomware groups and the top 20 TF-IDF "
+    st.write(
+        "Hold-Out Spot-Check: Manually review the top 10–15 highest-risk ransomware groups and the top 20 TF-IDF "
             "terms. Confirm that groups correspond to known finance-targeting actors (e.g., LockBit, "
             "BlackCat) and that top keywords match verified phishing vocabulary."
-        )
-        st.info(
-            "**K-Means Internal Metrics**\n\n"
-            "Silhouette score, Davies-Bouldin score, and Calinski-Harabasz score are computed for "
-            "the chosen k. A silhouette score above 0.3 and a low Davies-Bouldin score indicate "
-            "meaningful cluster separation."
-        )
-    with col_b:
-        st.info(
-            "**Cross-Source Consistency Check**\n\n"
-            "Groups appearing in both ransomware.live and ThreatFox (via exact IOC or family match) "
-            "are treated as high-confidence. Discrepancies between sources are flagged in the "
-            "supporting tables on the Interactive Analytics Panel."
-        )
-        st.info(
-            "**False-Positive Sampling**\n\n"
-            "A random sample of 50 URLs flagged as containing banking keywords is reviewed manually "
-            "to estimate the false-positive rate. Results are used to tune keyword list specificity "
-            "and update the operational false-positive rate metric."
-        )
+    )
