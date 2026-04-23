@@ -53,8 +53,8 @@ team_members = [
         "name": "Supradipta Panta",
         "milestone_1": "Code review",
         "milestone_2": "Data Collection and Summary",
-        "milestone_3": "",
-        "signature": "Supradipta Panta (04/07/2026)",
+        "milestone_3": "Key Insights and Intelligence Summary",
+        "signature": "Supradipta Panta (04/23/2026)",
     },
 ]
 
