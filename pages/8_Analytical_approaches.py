@@ -448,6 +448,90 @@ def render_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.DataFrame) -> 
     )
 
 
+def render_key_insights_tab() -> None:
+    st.header("Key Insights & Intelligence Summary")
+
+    st.markdown(
+        """
+### **1. Types of Infrastructure Adversaries Are Using**
+- Attackers rely on **IP:port C2 servers** (443, 995, 2078) to blend into encrypted banking traffic.
+- Malware families like **QakBot, Emotet, Feodo** use **consistent C2 endpoints** for credential theft.
+- Ramnit uses **fast-rotating DGA domains**, making blocking difficult for banks.
+
+### **2. Emerging Threats Toward the Banking Industry**
+- Phishing URLs impersonate **bank brands** using terms like *login, secure, verify*.
+- Daily phishing activity shows **continuous targeting** of online banking users.
+- Malware clusters align with **account takeover, credential harvesting, and ransomware delivery**.
+
+### **3. How Analytics Provide Intelligence or Defense**
+- IOC analysis helps banks prioritize **high-risk C2 detection**.
+- Phishing URL patterns support **early fraud alerts**.
+- Heatmaps highlight **which malware families pose the greatest risk**.
+- Text-mining and clustering detect **new phishing domains** targeting financial users.
+"""
+    )
+
+    st.divider()
+    st.subheader("Summary Visualization")
+
+    option = st.selectbox(
+        "Choose a visualization:",
+        ["Malware Family vs IOC Type", "Phishing Activity Timeline"],
+        key="key_insights_visualization",
+    )
+
+    if option == "Malware Family vs IOC Type":
+        try:
+            df_threat = pd.read_csv("data/filtered_iocs_threatfox.csv")
+            heatmap_df = (
+                df_threat.groupby(["malware_printable", "ioc_type"])
+                .size()
+                .reset_index(name="count")
+            )
+            pivot = heatmap_df.pivot(
+                index="malware_printable",
+                columns="ioc_type",
+                values="count",
+            ).fillna(0)
+
+            fig = px.imshow(
+                pivot,
+                aspect="auto",
+                color_continuous_scale="YlOrRd",
+                title="Banking Threat Concentration: Malware Family vs IOC Type",
+                labels={"x": "IOC Type", "y": "Malware Family", "color": "Count"},
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
+        except Exception:
+            st.warning("Heatmap could not be generated. Ensure the ThreatFox CSV is available.")
+    else:
+        try:
+            df_phish = pd.read_csv("data/verified_online_banking_finance.csv")
+            df_phish["submission_time"] = pd.to_datetime(
+                df_phish["submission_time"], errors="coerce"
+            )
+
+            timeline = (
+                df_phish.groupby(df_phish["submission_time"].dt.date)
+                .size()
+                .reset_index(name="count")
+            )
+
+            fig = px.line(
+                timeline,
+                x="submission_time",
+                y="count",
+                markers=True,
+                title="Phishing Activity Timeline (Banking Sector)",
+                labels={"submission_time": "Date", "count": "Phishing Submissions"},
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
+        except Exception:
+            st.warning("Phishing timeline could not be generated. Ensure the phishing CSV is available.")
+
+
 def render_event_correlation_panel(
     group_summary: pd.DataFrame,
     filtered_df: pd.DataFrame,
@@ -693,8 +777,8 @@ if filtered_groups.empty:
     filtered_groups = group_summary.copy()
     st.sidebar.info("No groups matched that threshold, so all groups are shown instead.")
 
-interactive_tab, justification_tab = st.tabs(
-    ["Interactive Analytics Panel", "Approach Justification"]
+interactive_tab, justification_tab, key_insights_tab = st.tabs(
+    ["Interactive Analytics Panel", "Approach Justification", "Key Insights & Intelligence Summary"]
 )
 
 ascending = sort_metric == "recency_days"
@@ -1082,3 +1166,6 @@ with justification_tab:
             "terms. Confirm that groups correspond to known finance-targeting actors (e.g., LockBit, "
             "BlackCat) and that top keywords match verified phishing vocabulary."
     )
+
+with key_insights_tab:
+    render_key_insights_tab()
