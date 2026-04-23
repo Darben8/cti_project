@@ -553,8 +553,6 @@ def render_event_correlation_panel(
             )
             st.plotly_chart(fig_conf, use_container_width=True)
 
-        st.dataframe(panel_df.head(record_limit), use_container_width=True, hide_index=True)
-
     left, right = st.columns([1.2, 1])
     with left:
         fig_groups = px.bar(
@@ -611,13 +609,6 @@ def render_event_correlation_panel(
         st.plotly_chart(fig_heatmap, use_container_width=True)
     else:
         st.info("No IOC type records found for the selected group filters.")
-
-    st.markdown("### Relationship Network")
-    network_fig = build_network_figure(nodes, edges, top_group_keys, network_view)
-    if len(network_fig.data) == 0:
-        st.info("No network edges are available for the selected controls.")
-    else:
-        st.plotly_chart(network_fig, use_container_width=True)
 
     st.markdown("### Network Metrics")
     if has_columns(
