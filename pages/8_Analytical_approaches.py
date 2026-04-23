@@ -1039,7 +1039,7 @@ with justification_tab:
         ])
     )
 
-    st.markdown("#### Validation Methods")
+    st.markdown("#### Validation Method")
     st.write(
         "Hold-Out Spot-Check: Manually review the top 10–15 highest-risk ransomware groups and the top 20 TF-IDF "
             "terms. Confirm that groups correspond to known finance-targeting actors (e.g., LockBit, "
