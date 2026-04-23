@@ -46,7 +46,7 @@ team_members = [
         "name": "Jiwon Chang",
         "milestone_1": "Intelligence buy in research",
         "milestone_2": "Data explorer page development",
-        "milestone_3": "Validation and error analysis",
+        "milestone_3": "Validation and Error Analysis",
         "signature": "Jiwon Chang (04/23/2026)",
     },
     {
