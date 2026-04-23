@@ -28,25 +28,34 @@ st.title("🏦 Cyber Threat Intelligence Platform: U.S. Banking")
 #st.caption("Milestone 1 - Industry baseline, threat trends, diamond models, and dashboard starter.")
 
 with st.container(border=True):
-    st.subheader("✅ What's Changed in Milestone 1")
-    st.checkbox("We tightened our industry focus to the banking sector within the finance industry", value=True, disabled=True)
-    st.checkbox("We focused on banking in North America (United States)", value=True, disabled=True)
-    st.checkbox("We removed AZSecure as a relevant data source", value=True, disabled=True)
-    st.checkbox(
-        "We prioritized top banking threats as credential theft then phishing, followed by ransomware and web application attacks",
-        value=True,
-        disabled=True,
-    )
+    with st.expander("📌 Milestone 1"):
+        st.subheader("✅ What's Changed in Milestone 1")
+        st.checkbox("We tightened our industry focus to the banking sector within the finance industry", value=True, disabled=True)
+        st.checkbox("We focused on banking in North America (United States)", value=True, disabled=True)
+        st.checkbox("We removed AZSecure as a relevant data source", value=True, disabled=True)
+        st.checkbox(
+            "We prioritized top banking threats as credential theft then phishing, followed by ransomware and web application attacks",
+            value=True,
+            disabled=True,
+        )
 
 with st.container(border=True):
-    st.subheader("✅ What's New in Milestone 2")
-    st.checkbox("We created the data explorer", value=True, disabled=True)
-    st.checkbox("We updated team roles in the pages subfolder", value=True, disabled=True)
-    st.checkbox("We included Threatfox as a datasource and worked with APIs rather than synthetic data", value=True, disabled=True)
-    st.checkbox("We updated the dashboard starter with new filters, metrics, data and charts that correlate banking assets with threat indicators", value=True, disabled=True)
-    st.checkbox("New supporting pages were added around collection strategy, data source identification/justification, and references.", value=True, disabled=True)
-    st.checkbox("We download threat intelligence data from phishtank and  in the data folder", value=True, disabled=True)
+    with st.expander("📌 Milestone 2"):
+        st.subheader("✅ What's New in Milestone 2")
+        st.checkbox("We created the data explorer", value=True, disabled=True)
+        st.checkbox("We updated team roles in the pages subfolder", value=True, disabled=True)
+        st.checkbox("We included Threatfox as a datasource and worked with APIs rather than synthetic data", value=True, disabled=True)
+        st.checkbox("We updated the dashboard starter with new filters, metrics, data and charts that correlate banking assets with threat indicators", value=True, disabled=True)
+        st.checkbox("New supporting pages were added around collection strategy, data source identification/justification, and references.", value=True, disabled=True)
+        st.checkbox("We download threat intelligence data from phishtank and  in the data folder", value=True, disabled=True)
 
+with st.container(border=True):
+    with st.expander("📌 Milestone 3"):
+        st.header("✅ Milestone 3: New Features")
+        st.checkbox("Analytical Approaches: Phishing URL Text Mining & Ransomware Correlation", value=True, disabled=True)
+        st.checkbox("Interactive Analytics Panel with parameter toggles", value=True, disabled=True)
+        st.checkbox("Preliminary Visualizations (Temporal Trends & Malware Distribution)", value=True, disabled=True)
+        st.checkbox("Operational Metrics (MTTD/MTTR explanation)", value=True, disabled=True)
 
 col1, col2 = st.columns([1.2, 1], gap="large")
 
