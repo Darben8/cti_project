@@ -124,20 +124,29 @@ def normalize_ioc_df(df: pd.DataFrame, source_name: str) -> pd.DataFrame:
 def load_phishtank_local() -> pd.DataFrame:
     try:
         df = pd.read_csv("data/phishtank.csv")
+        #df = pd.read_csv("data/verified_online_banking_finance.csv")
         return normalize_ioc_df(df, "PhishTank CSV")
     except Exception:
         return empty_records_df()
 
 
+# @st.cache_data(ttl=3600)
+# def load_combined_iocs() -> pd.DataFrame:
+#     try:
+#         df = pd.read_csv("data/combined_iocs.csv")
+#         normalized = normalize_ioc_df(df, "combined_iocs.csv")
+#         return normalized
+#     except Exception:
+#         return empty_records_df()
+
 @st.cache_data(ttl=3600)
-def load_combined_iocs() -> pd.DataFrame:
+def load_threatfox_data() -> pd.DataFrame:
     try:
-        df = pd.read_csv("data/combined_iocs.csv")
-        normalized = normalize_ioc_df(df, "combined_iocs.csv")
+        df = pd.read_csv("data/filtered_iocs_threatfox.csv")
+        normalized = normalize_ioc_df(df, "ThreatFox")
         return normalized
     except Exception:
         return empty_records_df()
-
 
 @st.cache_data(ttl=3600)
 def fetch_threatfox_live() -> pd.DataFrame:
@@ -242,7 +251,8 @@ with st.spinner("Loading local and live intelligence sources..."):
     records_df = pd.concat(
         [
             load_phishtank_local(),
-            load_combined_iocs(),
+            #load_combined_iocs(),
+            load_threatfox_data(),
             fetch_threatfox_live(),
             fetch_ransomware_live(),
         ],
@@ -297,7 +307,7 @@ with st.expander("**📈 Milestone 3**"):
                     with st.expander("📝 Visualization Analysis: Process, Data & Value"):
                         st.markdown(f"""
                         - **Process:** We performed a temporal aggregation by normalizing the `{date_col}` field into daily buckets. This involved converting raw string timestamps into datetime objects to visualize the velocity of threats.
-                        - **Data Used:** This visualization draws from the **Ransomware.live** and **PhishTank** datasets currently loaded in the dashboard.
+                        - **Data Used:** This visualization draws from the **Ransomware.live** , **ThreatFox** , and **PhishTank** datasets currently loaded in the dashboard.
                         - **Value:** Identifying peaks in activity allows the bank to correlate external threat surges with internal log anomalies, assisting in proactive resource shifting during high-attack periods.
                         """)
                 else:

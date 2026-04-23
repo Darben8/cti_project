@@ -886,286 +886,212 @@ with interactive_tab:
 
 
 with justification_tab:
-    st.markdown("### Selected Analytical Approaches")
-    st.write(
-        "The project uses two primary analytical approaches from the CTI and data-mining module: "
-        "phishing URL text mining and ransomware event correlation. This page visualizes the event "
-        "correlation approach, while the phishing URL text-mining utility produces companion outputs "
-        "for keyword, n-gram, URL-feature, and clustering analysis."
+    st.markdown(
+        """
+        <style>
+        .cti-banner {
+            background: linear-gradient(135deg, #0B2545 0%, #123B5D 100%);
+            color: #F8FAFC;
+            border: 1px solid #1F3B57;
+            border-radius: 18px;
+            padding: 1.2rem 1.3rem;
+            margin-bottom: 1rem;
+        }
+        .cti-banner h3 {
+            margin: 0 0 0.35rem 0;
+            color: #F8FAFC;
+        }
+        .cti-banner p {
+            margin: 0;
+            color: #D7E3F0;
+        }
+        .cti-badge {
+            display: inline-block;
+            padding: 0.35rem 0.7rem;
+            margin: 0 0.4rem 0.45rem 0;
+            border-radius: 999px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+        }
+        .badge-blue { background: #DCEAFE; color: #0B2545; border-color: #9FC4F3; }
+        .badge-teal { background: #D8F1EE; color: #0A4C4A; border-color: #79C6BC; }
+        .badge-slate { background: #E8EDF2; color: #334155; border-color: #CBD5E1; }
+        .method-card {
+            border-radius: 18px;
+            padding: 1rem 1rem 0.9rem 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #D7DEE8;
+            background: #F3F6F9;
+        }
+        .method-card h4 {
+            margin: 0 0 0.2rem 0;
+            color: #0B2545;
+        }
+        .method-card p {
+            margin: 0 0 0.75rem 0;
+        }
+        .method-blue { border-top: 6px solid #123B5D; }
+        .method-teal { border-top: 6px solid #0F766E; }
+        .method-navy { border-top: 6px solid #0B2545; }
+        .info-block {
+            border-radius: 12px;
+            padding: 0.7rem 0.85rem;
+            margin-bottom: 0.55rem;
+            border-left: 4px solid;
+            background: #FFFFFF;
+        }
+        .analysis-block { border-color: #1D4ED8; background: #EFF6FF; }
+        .output-block { border-color: #0F766E; background: #ECFDF5; }
+        .validation-block { border-color: #0F766E; background: #E6F7F5; }
+        .limit-block { border-color: #D97706; background: #FFF7ED; }
+        .risk-block { border-color: #DC2626; background: #FEF2F2; }
+        .bottom-panel {
+            border-radius: 16px;
+            padding: 1rem 1rem 0.8rem 1rem;
+            border: 1px solid #D7DEE8;
+            background: #F3F6F9;
+            height: 100%;
+        }
+        .bottom-panel h4 {
+            margin: 0 0 0.5rem 0;
+            color: #0B2545;
+        }
+        .bottom-panel ul {
+            margin: 0;
+            padding-left: 1.1rem;
+        }
+        .bottom-panel li {
+            margin-bottom: 0.45rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
     )
 
-    st.markdown("### Approach 1: Phishing URL Text Mining")
-    st.table(
-        pd.DataFrame(
-            [
-                {
-                    "Rubric Item": "Why selected",
-                    "Project Response": (
-                        "Banking phishing URLs contain repeated lexical patterns such as login, "
-                        "secure, account, bank, wallet, payment, suspicious TLDs, and long encoded paths. "
-                        "Text mining converts those URL strings into analyst-readable patterns."
-                    ),
-                },
-                {
-                    "Rubric Item": "Data sources",
-                    "Project Response": (
-                        "data/verified_online_banking_finance.csv, data/phishtank.csv, and generated "
-                        "outputs under data/phishing_url_text_mining/."
-                    ),
-                },
-                {
-                    "Rubric Item": "Major steps",
-                    "Project Response": (
-                        "Normalize URLs; extract domain/path/query features; count suspicious, finance, "
-                        "and brand keywords; compute TF-IDF terms; compute repeated n-grams; optionally "
-                        "cluster URL feature vectors with K-Means."
-                    ),
-                },
-                {
-                    "Rubric Item": "Why those steps",
-                    "Project Response": (
-                        "Feature extraction makes URL structure measurable, TF-IDF highlights distinctive "
-                        "terms, n-grams reveal repeated phishing phrases, and clustering groups similar URL "
-                        "construction patterns for analyst triage."
-                    ),
-                },
-                {
-                    "Rubric Item": "Tools used",
-                    "Project Response": "Python, pandas, scikit-learn TF-IDF/CountVectorizer/K-Means, Plotly, Streamlit.",
-                },
-                {
-                    "Rubric Item": "Evaluation methods",
-                    "Project Response": (
-                        "Keyword coverage percentage, suspicious TLD percentage, HTTPS percentage, manual "
-                        "spot-checking of top terms, and K-Means metrics such as silhouette score, Davies-Bouldin "
-                        "score, Calinski-Harabasz score, and inertia."
-                    ),
-                },
-            ]
+    st.markdown(
+        """
+        <div class="cti-banner">
+            <h3>Approach Justification</h3>
+            <p>
+                This analytic design is aimed primarily at <strong>tactical CTI</strong> and secondarily at
+                <strong>operational CTI</strong>, giving defenders fast visibility into phishing indicators,
+                ransomware-linked infrastructure, and grouped threat patterns relevant to U.S. banking.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <span class="cti-badge badge-blue">CTI Level: Tactical</span>
+        <span class="cti-badge badge-blue">CTI Level: Operational</span>
+        <span class="cti-badge badge-slate">Sector Focus: U.S. Banking</span>
+        <span class="cti-badge badge-teal">Primary Data Sources: PhishTank, ThreatFox, ransomware.live</span>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    card_1, card_2, card_3 = st.columns(3, gap="large")
+
+    with card_1:
+        st.markdown(
+            """
+            <div class="method-card method-blue">
+                <h4>Phishing URL Text Mining</h4>
+                <p>Turns large volumes of phishing URLs into defender-readable lexical and structural patterns.</p>
+                <div class="info-block analysis-block"><strong>Mission:</strong> Identify recurring banking-themed phishing traits that support faster detection and triage.</div>
+                <div class="info-block analysis-block"><strong>How it works:</strong> It extracts URL features, keywords, TF-IDF terms, and repeated n-grams from verified phishing data.</div>
+                <div class="info-block output-block"><strong>Operational value:</strong> It helps analysts spot suspicious banking lures earlier and prioritize likely credential-harvesting URLs.</div>
+                <div class="info-block output-block"><strong>Produces for defenders:</strong> Top keywords, suspicious TLD patterns, URL feature profiles, and triage-ready phishing indicators.</div>
+                <div class="info-block validation-block"><strong>Validation:</strong> Performance is checked through keyword coverage, suspicious TLD share, HTTPS share, and analyst review of top terms.</div>
+                <div class="info-block limit-block"><strong>Limitations:</strong> Static keyword lists can miss new phishing language, brand drift, or non-English lure patterns.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-    )
 
-    st.markdown("### Approach 2: Ransomware Event Correlation")
-    st.table(
-        pd.DataFrame(
-            [
-                {
-                    "Rubric Item": "Why selected",
-                    "Project Response": (
-                        "Victim, IOC, TTP, and external threat-intelligence records become more useful when "
-                        "connected by ransomware group, indicator value, country, IOC type, and TTP."
-                    ),
-                },
-                {
-                    "Rubric Item": "Data sources",
-                    "Project Response": (
-                        "data/finance_victims.csv, data/finance_group_iocs.csv, "
-                        "data/filtered_iocs_threatfox.csv, and generated outputs under "
-                        "data/ransomware_event_correlation/."
-                    ),
-                },
-                {
-                    "Rubric Item": "Major steps",
-                    "Project Response": (
-                        "Normalize group names; map aliases; remove punctuation; aggregate victims by group; "
-                        "count countries, IOCs, IOC types, and TTPs; join ransomware.live and ThreatFox IOCs by "
-                        "exact indicator value; match group names to malware-family fields, aliases, and tags; "
-                        "build group-victim-country-IOC-TTP network edges."
-                    ),
-                },
-                {
-                    "Rubric Item": "Why those steps",
-                    "Project Response": (
-                        "Entity resolution prevents missed matches from naming differences, aggregation produces "
-                        "group-level prioritization, exact IOC matching gives high-confidence source overlap, and "
-                        "network modeling exposes relationships analysts can triage."
-                    ),
-                },
-                {
-                    "Rubric Item": "Tools used",
-                    "Project Response": "Python, pandas, custom graph metrics, Plotly, Streamlit.",
-                },
-                {
-                    "Rubric Item": "Evaluation methods",
-                    "Project Response": (
-                        "Exact IOC overlap count, group-family match count, degree centrality, connected-component "
-                        "analysis, recency, victim counts, IOC counts, TTP counts, and manual review of unmatched "
-                        "ThreatFox records."
-                    ),
-                },
-            ]
+    with card_2:
+        st.markdown(
+            """
+            <div class="method-card method-teal">
+                <h4>Ransomware Event Correlation</h4>
+                <p>Connects victims, groups, IOCs, IOC types, countries, and TTPs into one operational picture.</p>
+                <div class="info-block analysis-block"><strong>Mission:</strong> Link ransomware activity across sources so banking defenders can prioritize the most relevant groups and indicators.</div>
+                <div class="info-block analysis-block"><strong>How it works:</strong> It normalizes group names, joins victim and IOC records, and maps relationship networks across observed entities.</div>
+                <div class="info-block output-block"><strong>Operational value:</strong> It supports faster actor prioritization, IOC enrichment, and understanding of which groups are most relevant to finance.</div>
+                <div class="info-block output-block"><strong>Produces for defenders:</strong> Group risk views, exact IOC overlaps, relationship networks, country exposure, and TTP-linked context.</div>
+                <div class="info-block validation-block"><strong>Validation:</strong> Confidence comes from exact IOC matches, group-level counts, network centrality measures, and manual review of unmatched records.</div>
+                <div class="info-block limit-block"><strong>Limitations:</strong> Alias mismatches and dataset gaps can reduce overlap, especially when ThreatFox coverage does not align with finance ransomware groups.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-    )
 
-    st.markdown("### Approach 3: KMeans Clustering")
-    st.table(
-        pd.DataFrame(
-            [
-                {
-                    "Rubric Item": "Why selected",
-                    "Project Response": (
-                        "Clustering is a great analytical method to group similar types of data together. "
-                        "We used KMeans specifically because it is an efficient clustering algorithm for paritional clustering."
-                    ),
-                },
-                {
-                    "Rubric Item": "Data sources",
-                    "Project Response": (
-                        "data/filtered_iocs_threatfox.csv"
-                    ),
-                },
-                {
-                    "Rubric Item": "Major steps",
-                    "Project Response": (
-                        "The data read from the csv cannot be read directly so it is converted into numbers along with other information like how many groups kmeans will need to create "
-                        "KMeans looks at all the records and tries to group similar ones together. It starts with a rough guess, keeps refining the groups, and repeats until the groups stop changing."
-                    ),
-                },
-                {
-                    "Rubric Item": "Why those steps",
-                    "Project Response": (
-                        "The raw columns aren't directly usable by KMeans, so they get transformed into numeric features the algorithm can understand."
-                        "The iterative refinement process is how KMeans finds clusters that are more cohesive and separated. Feature extraction makes URL structure measurable."
-                    ),
-                },
-                {
-                    "Rubric Item": "Tools used",
-                    "Project Response": "Python, pandas, scikit-learn, Streamlit."
-                },
-                {
-                    "Rubric Item": "Evaluation methods",
-                    "Project Response": (
-                        "K-Means metrics such as silhouette score, Davies-Bouldin "
-                        "score, Calinski-Harabasz score, and inertia."
-                    ),
-                },
-            ]
+    with card_3:
+        st.markdown(
+            """
+            <div class="method-card method-navy">
+                <h4>K-Means Clustering</h4>
+                <p>Groups similar threat records so analysts can detect shared IOC patterns without reading each record one by one.</p>
+                <div class="info-block analysis-block"><strong>Mission:</strong> Surface clusters of similar threat artifacts that can support triage and pattern-based investigation.</div>
+                <div class="info-block analysis-block"><strong>How it works:</strong> It converts selected IOC attributes into numerical features and groups records by similarity using K-Means.</div>
+                <div class="info-block output-block"><strong>Operational value:</strong> It gives defenders a faster way to identify repeated IOC patterns and focus on dense clusters rather than isolated rows.</div>
+                <div class="info-block output-block"><strong>Produces for defenders:</strong> Cluster assignments, dominant malware tendencies, record-volume summaries, and cluster-level behavior patterns.</div>
+                <div class="info-block validation-block"><strong>Validation:</strong> Cluster quality is checked with silhouette, Davies-Bouldin, Calinski-Harabasz, inertia, and review of dominant cluster makeup.</div>
+                <div class="info-block limit-block"><strong>Limitations:</strong> Cluster quality depends on feature design and chosen k, and unsupervised groupings may not map cleanly to real threat families.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-    )
-    
-    st.markdown("### Operational Metrics")
-    st.write(
-        "These analytics support CTI program evaluation by improving alert precision and reducing mean time "
-        "to detection. URL text mining helps prioritize URLs that resemble verified finance phishing, while "
-        "event correlation prioritizes ransomware groups with recent finance victims, many IOCs, broad country "
-        "impact, or strong TTP coverage."
-    )
-    st.table(
-        pd.DataFrame(
-            [
-                {
-                    "Metric": "Alert precision",
-                    "How analytics improve it": (
-                        "Suspicious URL features, repeated phishing keywords, and cross-source IOC matches "
-                        "give analysts stronger criteria before escalation."
-                    ),
-                },
-                {
-                    "Metric": "MTTD",
-                    "How analytics improve it": (
-                        "Group risk scoring and network centrality surface active finance-targeting groups "
-                        "and their associated IOC types faster."
-                    ),
-                },
-                {
-                    "Metric": "False-positive rate",
-                    "How analytics improve it": (
-                        "Manual validation of broad keyword matches such as card, pay, and ing helps identify "
-                        "which filters are too broad and should be tuned."
-                    ),
-                },
-            ]
+
+    st.markdown("### Validation, Error Analysis & Operational Metrics")
+    bottom_col_1, bottom_col_2, bottom_col_3 = st.columns(3, gap="large")
+
+    with bottom_col_1:
+        st.markdown(
+            """
+            <div class="bottom-panel">
+                <h4>Cross-Cutting Validation and Risks</h4>
+                <div class="info-block validation-block"><strong>Validation:</strong> Exact IOC overlap, keyword coverage, cluster quality metrics, and analyst spot-checks are used together rather than relying on one measure.</div>
+                <div class="info-block limit-block"><strong>Caution:</strong> Threat coverage differences, static keyword lists, and alias normalization can reduce analytic confidence.</div>
+                <div class="info-block risk-block"><strong>Risk:</strong> False positives can come from broad lexical matches, while false negatives can come from unseen aliases, new vocabulary, or temporal mismatch across datasets.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-    )
 
-    st.markdown("### Validation and Error Analysis")
-    st.write(
-        "Exact IOC overlap is treated as high-confidence correlation. Group/family matching is lower confidence "
-        "because ransomware group names and malware-family labels can use aliases. In the current local ThreatFox "
-        "subset, no exact IOC or group-family matches were found, which suggests the available ThreatFox data may "
-        "cover malware families such as botnets rather than the ransomware groups observed in the finance victim set."
-    )
+    with bottom_col_2:
+        st.markdown(
+            """
+            <div class="bottom-panel">
+                <h4>Operational Metrics Supported</h4>
+                <ul>
+                    <li><strong>Alert precision:</strong> stronger evidence before escalation through suspicious URL and IOC patterning.</li>
+                    <li><strong>MTTD:</strong> faster prioritization of finance-relevant groups, infrastructure, and repeated phishing patterns.</li>
+                    <li><strong>False-positive reduction:</strong> manual review highlights over-broad terms and weak correlations that should be tuned.</li>
+                    <li><strong>Analyst efficiency:</strong> clustered records and summarized networks reduce row-by-row review burden.</li>
+                </ul>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    st.markdown("#### Assumptions")
-    st.table(
-        pd.DataFrame([
-            {
-                "Assumption": "Group name normalization resolves aliases correctly",
-                "Applies To": "Event Correlation",
-                "Risk if Wrong": "Missed cross-source matches; groups counted separately",
-            },
-            {
-                "Assumption": "Phishing URLs follow Latin-script / English patterns",
-                "Applies To": "Text Mining",
-                "Risk if Wrong": "Non-ASCII or IDN homograph URLs evade keyword matching",
-            },
-            {
-                "Assumption": "URL feature vectors are roughly spherical for K-Means",
-                "Applies To": "K-Means Clustering",
-                "Risk if Wrong": "Elongated clusters produce low silhouette scores and poor separation",
-            },
-            {
-                "Assumption": "ThreatFox local subset is representative of finance-sector threats",
-                "Applies To": "Event Correlation",
-                "Risk if Wrong": "Zero overlap counts do not reflect true absence of shared IOCs",
-            },
-        ])
-    )
-
-    st.markdown("#### Limitations")
-    st.table(
-        pd.DataFrame([
-            {
-                "Limitation": "ThreatFox subset covers botnets/malware families, not finance ransomware groups",
-                "Impact": "Exact IOC overlap and group-family match counts are currently zero",
-            },
-            {
-                "Limitation": "Keyword lists (banking, suspicious, brand) are static",
-                "Impact": "Novel phishing vocabulary introduced after list creation is missed",
-            },
-            {
-                "Limitation": "K-Means requires a pre-chosen k; no ground-truth cluster labels exist",
-                "Impact": "Optimal k is estimated via silhouette/Davies-Bouldin, not verified externally",
-            },
-            {
-                "Limitation": "Ransomware.live data is scraped and may contain inconsistent group naming",
-                "Impact": "Some alias normalization may fail for lesser-known groups",
-            },
-        ])
-    )
-
-    st.markdown("#### Error Sources")
-    st.table(
-        pd.DataFrame([
-            {
-                "Error Source": "False positives in keyword matching",
-                "Example": "Terms like 'pay', 'card', 'ing' appear in legitimate banking URLs",
-                "Mitigation": "Tune keyword lists; add whitelist for known-good domains",
-            },
-            {
-                "Error Source": "Fuzzy group/family matching misses",
-                "Example": "Lesser-known groups not represented in ThreatFox alias fields",
-                "Mitigation": "Expand alias table; incorporate MISP galaxy cluster mappings",
-            },
-            {
-                "Error Source": "IOC formatting inconsistencies",
-                "Example": "Trailing slash, protocol prefix, or case differences in URLs",
-                "Mitigation": "Normalize all indicators to lowercase, strip trailing slashes pre-join",
-            },
-            {
-                "Error Source": "Temporal mismatch between data sources",
-                "Example": "Ransomware.live victims dated 2024 vs. ThreatFox IOCs from 2022",
-                "Mitigation": "Filter by recency; weight recent IOCs more heavily in risk scoring",
-            },
-        ])
-    )
-
-    st.markdown("#### Validation Method")
-    st.write(
-        "Hold-Out Spot-Check: Manually review the top 10–15 highest-risk ransomware groups and the top 20 TF-IDF "
-            "terms. Confirm that groups correspond to known finance-targeting actors (e.g., LockBit, "
-            "BlackCat) and that top keywords match verified phishing vocabulary."
-    )
-
+    with bottom_col_3:
+        st.markdown(
+            """
+            <div class="bottom-panel">
+                <h4>Why This Is Tactical / Operational CTI</h4>
+                <ul>
+                    <li><strong>Tactical CTI:</strong> the page focuses on IOCs, phishing URL traits, malware-linked infrastructure, and directly observable threat behavior.</li>
+                    <li><strong>Operational CTI:</strong> event correlation adds campaign-level context by linking actors, victims, infrastructure, countries, and TTPs.</li>
+                    <li><strong>Not primarily strategic:</strong> the emphasis is on defender actionability, triage, and detection support rather than long-range forecasting.</li>
+                </ul>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 with key_insights_tab:
     render_key_insights_tab()
+
