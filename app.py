@@ -10,109 +10,71 @@ st.set_page_config(
 
 CHASE_BLUE = "#117ACA"
 DARK_BLUE = "#0B3A69"
-LIGHT_BG = "#F4F8FC"
+LIGHT_BG = "#2C2CE7"
 
 st.markdown(
     f"""
     <style>
-      .stApp {{ background-color: {LIGHT_BG}; }}
-      h1, h2, h3 {{ color: {DARK_BLUE}; }}
-      [data-testid="stMetricValue"] {{ color: {CHASE_BLUE}; }}
-      .block-container {{ padding-top: 1.2rem; }}
+    .stApp {{ background-color: transparent; }}
+    h1, h2, h3 {{ color: {DARK_BLUE}; }}
+    [data-testid="stMetricValue"] {{ color: {CHASE_BLUE}; }}
+    .block-container {{ padding-top: 1.2rem; }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 st.title("🏦 Cyber Threat Intelligence Platform: U.S. Banking")
-st.caption("Milestone 1 - Industry baseline, threat trends, diamond models, and dashboard starter.")
+#st.caption("Milestone 1 - Industry baseline, threat trends, diamond models, and dashboard starter.")
+st.info("Project Milestone Updates.")
 
-with st.container(border=True):
-    st.subheader("✅ What's New in This Milestone")
-    st.checkbox("We tightened our industry focus to the banking sector within the finance industry", value=True, disabled=True)
-    st.checkbox("We focused on banking in North America (United States)", value=True, disabled=True)
-    st.checkbox("We removed AZSecure as a relevant data source", value=True, disabled=True)
-    st.checkbox(
-        "We prioritized top banking threats as credential theft then phishing, followed by ransomware and web application attacks",
-        value=True,
-        disabled=True,
-    )
+with st.expander("Milestone 1", expanded=False):
+    with st.container(border=True):
+        st.subheader("✅ What's Changed in Milestone 1")
+        st.checkbox("We tightened our industry focus to the banking sector within the finance industry", value=True, disabled=True)
+        st.checkbox("We focused on banking in North America (United States)", value=True, disabled=True)
+        st.checkbox("We removed AZSecure as a relevant data source", value=True, disabled=True)
+        st.checkbox(
+            "We prioritized top banking threats as credential theft then phishing, followed by ransomware and web application attacks",
+            value=True,
+            disabled=True,
+        )
+with st.expander("Milestone 2", expanded=False):
+    with st.container(border=True):
+        st.subheader("✅ What's New in Milestone 2")
+        st.checkbox("We created the data explorer", value=True, disabled=True)
+        st.checkbox("We updated team roles in the pages subfolder", value=True, disabled=True)
+        st.checkbox("We included Threatfox as a datasource and worked with APIs rather than synthetic data", value=True, disabled=True)
+        st.checkbox("We updated the dashboard starter with new filters, metrics, data and charts that correlate banking assets with threat indicators", value=True, disabled=True)
+        st.checkbox("New supporting pages were added around collection strategy, data source identification/justification, and references.", value=True, disabled=True)
+        st.checkbox("We download threat intelligence data from phishtank and  in the data folder", value=True, disabled=True)
 
-# col1, col2 = st.columns([1.2, 1], gap="large")
+st.divider()
 
-# with col1:
-#     st.subheader("Industry Background")
-#     st.markdown(
-#         """
-# - **Industry focus:** U.S. banking sector within the broader finance and insurance ecosystem.
-# - **Core services/products:** retail banking, commercial banking, digital payments, lending, wealth management, and treasury services.
-# - **Major industry players:** JPMorgan Chase, Bank of America, Citigroup, Wells Fargo, HSBC, MUFG, and Standard Chartered.
-# - **Why IT is mission-critical:** always-on online banking, real-time transaction processing, fraud detection pipelines, API-driven integrations, and regulatory reporting depend on secure digital infrastructure.
-# - **Risk concentration:** banking remains highly targeted due to access to capital, high-value identity data, internet-facing services, and transaction velocity.
-#         """
-#     )
+col1, col2 = st.columns([1.2, 1], gap="large")
 
-#     st.subheader("CTI Use Case / Threat-Model-Backed Design")
-#     st.markdown(
-#         """
-# This platform helps security teams **prioritize high-impact banking threats** and **defend critical assets** by combining:
-# 1. Threat-trend intelligence (phishing, ransomware, exposed infrastructure),
-# 2. Asset-centric risk context,
-# 3. MITRE ATT&CK-aligned adversary behavior,
-# 4. A dynamic dashboard for rapid triage and decision support.
+with col1:
+    st.subheader("Ethics and Data Governance")
+    st.markdown(
+        """
+   1) All data comes from approved documented sources. No stolen or unauthorized data is used.
 
-# **Decisions enabled:**
-# - Which threat categories should be prioritized this week?
-# - Which assets require immediate hardening and monitoring?
-# - Which ATT&CK techniques should drive detections, controls, and executive reporting?
-#         """
-#     )
+   2) Only data relevant to the U.S. banking sector is included.
 
-# with col2:
-#     st.subheader("Stakeholders and User Stories")
-#     st.markdown(
-#         """
-# **1) SOC Analyst - Jordan**
-# - View near-real-time threat trends targeting banking infrastructure.
-# - Filter and prioritize high-risk assets for monitoring.
+   3) Our app does not expose sensitive or proprietary information, or any details that could increase operational risk.
+        """)
 
-# **2) CISO - Alicia**
-# - Track executive KPIs (threat volume and exposure levels).
-# - Review adversary capabilities and attack paths for budget planning.
+with col2:
+    st.subheader("Security-Aware Development Practices")
+    st.markdown(
+        """
+1) Secrets are stored in environment variables and not hardcoded in the codebase.
 
-# **3) Threat Intelligence Analyst - Rahul**
-# - Use adversary profiles and diamond models for leadership briefings.
-# - Detect patterns using category-filtered threat dashboards.
-#         """
-#     )
+2) We implemented request timeouts and error handling for all API calls to prevent hanging and ensure graceful failure.
 
-#     st.subheader("Intelligence Buy-In")
-#     st.markdown(
-#         """
-# - Banking faces persistent pressure from credential abuse, phishing, ransomware, and web app attacks.
-# - A CTI-led approach reduces uncertainty by translating external threat data into action for controls, detection engineering, and prioritization.
-# - Intelligence-backed prioritization helps reduce breach likelihood and expected financial impact by focusing resources on the highest-probability, highest-impact scenarios.
-# - This supports measurable outcomes for both technical teams and executive stakeholders.
-#         """
-#     )
+3) We use a requirements.txt file to manage dependencies and ensure consistent environments across development and deployment.
+""")
 
-st.header("References (APA-style summary)")
-st.markdown(
-    """
-- IBM. (2026). *X-Force Threat Intelligence Index 2026*.
-- Verizon. (2025a). *Data Breach Investigations Report*.
-- Verizon. (2025b). *DBIR finance-sector analysis excerpts used in class*.
-- MITRE ATT&CK. (n.d.). *Enterprise Matrix*. https://attack.mitre.org/
-- PhishTank. (n.d.). https://phishtank.org/
-- Ransomware.live. (n.d.). https://ransomware.live/
-- Shodan. (n.d.). https://www.shodan.io/
-- Deloitte. (2026).*Banking industry outlook 2026. Deloitte Insights* https://www.deloitte.com/us/en/insights/industry/financial-services/financial-services-industry-outlooks/banking-industry-outlook.html 
-- IBM Institute for Business Value. (2026). *026 banking and financial markets outlook* IBM. https://www.ibm.com/thought-leadership/institute-business-value/en-us/report/2026-banking-financial-markets-outlook 
-- KPMG. (2026). *Top banking trends for 2026* KPMG. https://kpmg.com/us/en/articles/2026/banking-trends.html 
-- McKinsey & Company. (2024). *Global banking annual review*. McKinsey. https://www.mckinsey.com/industries/financial-services/our-insights/global-banking-annual-review 
-- Moody’s Investors Service. (2026). *Global banking industry outlook 2026*. Moody’s. https://www.moodys.com/web/en/us/insights/credit-risk/outlooks/banking-2026.html 
-- Wipfli. (2026). *State of the banking industry 2026*. Wipfli LLP. https://www.wipfli.com/insights/research/state-of-the-banking-industry-2026 
-    """
-)
+
 
 st.info("Use the sidebar to navigate to Industry Background, Threat Trends, Critical Assets, Diamond Models, and Dashboard pages.")

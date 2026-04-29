@@ -9,6 +9,11 @@ import requests
 import streamlit as st
 from dotenv import load_dotenv
 
+# Import data validation utilities
+import sys
+sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent))
+from data_validation import DatasetQualityValidator, generate_dataset_report
+
 load_dotenv()
 
 st.title("📊 Dynamic CTI Dashboard Starter")
@@ -53,9 +58,12 @@ def fetch_shodan_bank_exposure() -> int:
         return -2
 
     query = 'org:"Bank" port:443 country:"US"'
-    url = f"https://api.shodan.io/shodan/host/count?key={key}&query={query}"
     try:
-        r = requests.get(url, timeout=12)
+        r = requests.get(
+            "https://api.shodan.io/shodan/host/count",
+            params={"key": key, "query": query},
+            timeout=12,
+        )
         r.raise_for_status()
         payload = r.json()
         return int(payload.get("total", 0))
@@ -64,6 +72,27 @@ def fetch_shodan_bank_exposure() -> int:
 
 
 df = load_local_events()
+
+# Dataset Quality Validation
+st.divider()
+with st.expander("ℹ️ Data Quality & Completeness", expanded=False):
+    validator = DatasetQualityValidator()
+    size_check = validator.validate_dataset_size(df, "Threat Events")
+    time_check = validator.validate_time_window(df, "date", "Threat Events")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Total Records", size_check["row_count"])
+        st.caption(f"{'✅' if size_check['is_valid'] else '⚠️'} {size_check['message']}")
+    
+    with col2:
+        st.metric("Time Window (Days)", time_check["days_covered"])
+        st.caption(f"{'✅' if time_check['is_valid'] else '⚠️'} {time_check['message']}")
+        st.caption(f"Period: {time_check['date_min']} to {time_check['date_max']}")
+    
+    if not (size_check['meets_ideal'] or time_check['meets_ideal']):
+        st.info(validator.get_justification_for_small_datasets())
+st.divider()
 
 threat_options = sorted(df["threat_type"].unique().tolist())
 asset_options = sorted(df["target_asset"].unique().tolist())
@@ -103,6 +132,8 @@ else:
     )
     fig.update_layout(plot_bgcolor="#F4F8FC", paper_bgcolor="#F4F8FC")
     st.plotly_chart(fig, use_container_width=True)
+
+st.divider()
 
 st.markdown("#### Filtered Threat/Event Table")
 display_cols = [
