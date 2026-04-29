@@ -28,7 +28,6 @@ PAGE_COLORS = {
 }
 
 
-st.set_page_config(page_title="Analytical Approaches", layout="wide")
 st.title("Analytical Approaches")
 st.caption(
     "Interactive CTI analytics for finance-sector ransomware correlation, with methodology "
@@ -1273,4 +1272,3 @@ with justification_tab:
         )
 with key_insights_tab:
     render_key_insights_tab()
-
