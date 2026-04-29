@@ -182,7 +182,7 @@ st.markdown(
 st.markdown(
     """
     <div class="hero">
-        <div class="hero-eyebrow">GSU · Cyber Threat Intelligence · Final Platform</div>
+        <div class="hero-eyebrow">Hackstreet Girls · Cyber Threat Intelligence · Finance</div>
         <div class="hero-title">CTI Platform:<br><span>U.S. Banking Sector</span></div>
         <div class="hero-sub">
             A tactical and operational threat intelligence platform tracking phishing campaigns,
@@ -194,8 +194,8 @@ st.markdown(
             <span class="tag">ransomware.live</span>
             <span class="tag">Shodan</span>
             <span class="tag">K-means Clustering</span>
-            <span class="tag">TF-IDF</span>
-            <span class="tag">Diamond Model</span>
+            <span class="tag">Text mining</span>
+            <span class="tag">Event Correlation</span>
         </div>
     </div>
     """,
