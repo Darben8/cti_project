@@ -15,6 +15,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CORRELATION_DIR = PROJECT_ROOT / "data" / "ransomware_event_correlation"
 THREATFOX_PATH = PROJECT_ROOT / "data" / "filtered_iocs_threatfox.csv"
 TEXT_MINING_DIR = PROJECT_ROOT / "data" / "phishing_url_text_mining"
+THREATFOX_KMEANS_DIR = PROJECT_ROOT / "data" / "kmeans_validation"
 
 PAGE_COLORS = {
     "group": "#C73E1D",
@@ -336,9 +337,12 @@ def render_text_mining_panel(
         st.dataframe(metrics_df, use_container_width=True, hide_index=True)
 
 
-def render_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.DataFrame) -> None:
-    st.markdown("### K-Means Cluster Explorer")
-    st.caption("Using the URL-pattern clustering output saved in `phishing_url_features.csv`.")
+def render_phishing_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.DataFrame) -> None:
+    st.markdown("### Phishing URL Pattern Clustering")
+    st.caption(
+        "Source: `utilities/phishing_url_text_mining.py` using `phishing_url_features.csv` "
+        "and `evaluation_metrics.csv`."
+    )
 
     required_columns = [
         "url_pattern_cluster",
@@ -349,7 +353,7 @@ def render_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.DataFrame) -> 
         "brand_keyword_count",
     ]
     if not has_columns(features_df, required_columns):
-        st.info("No K-Means clustering output was found in the phishing URL analysis files.")
+        st.info("No phishing URL K-Means clustering output was found in the text-mining files.")
         return
 
     control_cols = st.columns([1.2, 1.2, 1, 1])
@@ -443,6 +447,163 @@ def render_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.DataFrame) -> 
                 "uses_https",
             ]
         ].head(75),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+def render_threatfox_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.DataFrame) -> None:
+    st.markdown("### ThreatFox Malware IOC Clustering")
+    st.caption(
+        "Source: `utilities/kmeans2.py` using ThreatFox IOC records saved in "
+        "`iocs_with_clusters.csv` and `kmeans_validation_metrics.csv`."
+    )
+
+    required_columns = [
+        "cluster",
+        "malware_printable",
+        "ioc_type",
+        "threat_type",
+        "confidence_level",
+        "ioc_value",
+    ]
+    if not has_columns(features_df, required_columns):
+        st.info("No ThreatFox K-Means clustering output was found in `data/kmeans_validation`.")
+        return
+
+    control_cols = st.columns([1.2, 1.2, 1, 1])
+    cluster_options = sorted(features_df["cluster"].dropna().astype(int).unique().tolist())
+    selected_clusters = control_cols[0].multiselect(
+        "Clusters",
+        cluster_options,
+        default=cluster_options,
+        key="tf_km_clusters",
+    )
+    malware_options = ["All"] + sorted(
+        features_df["malware_printable"].dropna().astype(str).unique().tolist()
+    )
+    selected_malware = control_cols[1].selectbox(
+        "Dominant malware filter",
+        malware_options,
+        key="tf_km_malware",
+    )
+    ioc_type_options = ["All"] + sorted(features_df["ioc_type"].dropna().astype(str).unique().tolist())
+    selected_ioc_type = control_cols[2].selectbox("IOC Type", ioc_type_options, key="tf_km_ioc_type")
+    min_confidence = control_cols[3].slider("Min confidence", 0, 100, 0, key="tf_km_confidence")
+
+    panel_df = features_df.copy()
+    if selected_clusters:
+        panel_df = panel_df[panel_df["cluster"].isin(selected_clusters)]
+    if selected_malware != "All":
+        panel_df = panel_df[panel_df["malware_printable"] == selected_malware]
+    if selected_ioc_type != "All":
+        panel_df = panel_df[panel_df["ioc_type"] == selected_ioc_type]
+    panel_df["confidence_level"] = pd.to_numeric(panel_df["confidence_level"], errors="coerce")
+    panel_df = panel_df[panel_df["confidence_level"].fillna(0) >= min_confidence]
+
+    if "selected_as_final" in metrics_df.columns:
+        selected_row = metrics_df.loc[metrics_df["selected_as_final"] == True]  # noqa: E712
+    else:
+        selected_row = pd.DataFrame()
+    if selected_row.empty and not metrics_df.empty:
+        selected_row = metrics_df.iloc[[0]]
+
+    final_k = int(selected_row["k"].iloc[0]) if not selected_row.empty else 0
+    silhouette = float(selected_row["silhouette_score"].iloc[0]) if not selected_row.empty else 0.0
+    davies_bouldin = (
+        float(selected_row["davies_bouldin_score"].iloc[0]) if not selected_row.empty else 0.0
+    )
+    calinski = (
+        float(selected_row["calinski_harabasz_score"].iloc[0]) if not selected_row.empty else 0.0
+    )
+
+    metrics_cols = st.columns(5)
+    metrics_cols[0].metric("ThreatFox IOCs In View", f"{len(panel_df):,}")
+    metrics_cols[1].metric("Clusters In View", f"{panel_df['cluster'].nunique() if not panel_df.empty else 0:,}")
+    metrics_cols[2].metric("Selected k", f"{final_k}")
+    metrics_cols[3].metric("Silhouette", f"{silhouette:.3f}")
+    metrics_cols[4].metric("Davies-Bouldin", f"{davies_bouldin:.3f}")
+    st.caption(
+        f"Calinski-Harabasz score for the selected ThreatFox model: {calinski:.3f}. "
+        "Cluster IDs are internal K-Means labels and are interpreted through dominant malware and IOC patterns."
+    )
+
+    if panel_df.empty:
+        st.info("No ThreatFox clustered records match the current filters.")
+        return
+
+    cluster_summary = (
+        panel_df.groupby("cluster")
+        .agg(
+            ioc_count=("ioc_id", "count"),
+            dominant_malware=("malware_printable", lambda s: s.mode().iloc[0] if not s.mode().empty else "Unknown"),
+            dominant_ioc_type=("ioc_type", lambda s: s.mode().iloc[0] if not s.mode().empty else "Unknown"),
+            dominant_threat_type=("threat_type", lambda s: s.mode().iloc[0] if not s.mode().empty else "Unknown"),
+            avg_confidence=("confidence_level", "mean"),
+            unique_malware_families=("malware_printable", "nunique"),
+        )
+        .reset_index()
+    )
+
+    left, right = st.columns([1.2, 1])
+    with left:
+        fig_clusters = px.bar(
+            cluster_summary,
+            x="cluster",
+            y="ioc_count",
+            color="dominant_malware",
+            title="ThreatFox Records Per Cluster",
+            labels={
+                "cluster": "Cluster ID",
+                "ioc_count": "ThreatFox IOCs",
+                "dominant_malware": "Dominant Malware",
+            },
+        )
+        st.plotly_chart(fig_clusters, use_container_width=True)
+    with right:
+        fig_confidence = px.scatter(
+            cluster_summary,
+            x="avg_confidence",
+            y="unique_malware_families",
+            size="ioc_count",
+            color="dominant_ioc_type",
+            hover_name="dominant_malware",
+            title="ThreatFox Cluster Confidence Profile",
+            labels={
+                "avg_confidence": "Avg Confidence",
+                "unique_malware_families": "Unique Malware Families",
+                "dominant_ioc_type": "Dominant IOC Type",
+            },
+        )
+        st.plotly_chart(fig_confidence, use_container_width=True)
+
+    validation_plot_path = THREATFOX_KMEANS_DIR / "kmeans_validation_plot.png"
+    if validation_plot_path.exists():
+        st.image(
+            str(validation_plot_path),
+            caption="ThreatFox K sweep: elbow and silhouette validation from `kmeans2.py`.",
+            use_container_width=True,
+        )
+
+    if not metrics_df.empty:
+        st.markdown("#### ThreatFox K Selection Metrics")
+        st.dataframe(metrics_df, use_container_width=True, hide_index=True)
+
+    st.markdown("#### ThreatFox Cluster Summary")
+    st.dataframe(cluster_summary, use_container_width=True, hide_index=True)
+    st.dataframe(
+        panel_df[
+            [
+                "ioc_id",
+                "ioc_value",
+                "ioc_type",
+                "threat_type",
+                "malware_printable",
+                "cluster",
+                "confidence_level",
+                "first_seen_utc",
+            ]
+        ].head(100),
         use_container_width=True,
         hide_index=True,
     )
@@ -748,6 +909,8 @@ text_mining_metrics = load_table(TEXT_MINING_DIR / "evaluation_metrics.csv")
 phishing_url_features = load_table(TEXT_MINING_DIR / "phishing_url_features.csv")
 top_tfidf_keywords = load_table(TEXT_MINING_DIR / "top_tfidf_keywords.csv")
 top_ngrams = load_table(TEXT_MINING_DIR / "top_ngrams.csv")
+threatfox_kmeans_metrics = load_table(THREATFOX_KMEANS_DIR / "kmeans_validation_metrics.csv")
+threatfox_clustered_iocs = load_table(THREATFOX_KMEANS_DIR / "iocs_with_clusters.csv")
 
 if group_summary.empty:
     st.warning(
@@ -879,10 +1042,26 @@ with interactive_tab:
             ngrams_df=top_ngrams,
         )
     else:
-        render_kmeans_panel(
-            features_df=phishing_url_features,
-            metrics_df=text_mining_metrics,
+        st.markdown(
+            """
+            The app contains two different K-Means workflows:
+            `ThreatFox Malware IOC Clustering` groups ThreatFox indicators by IOC and malware-related features, while
+            `Phishing URL Pattern Clustering` groups finance-themed phishing URLs by lexical and URL-pattern features.
+            """
         )
+        threatfox_tab, phishing_tab = st.tabs(
+            ["ThreatFox Malware Clustering", "Phishing URL Pattern Clustering"]
+        )
+        with threatfox_tab:
+            render_threatfox_kmeans_panel(
+                features_df=threatfox_clustered_iocs,
+                metrics_df=threatfox_kmeans_metrics,
+            )
+        with phishing_tab:
+            render_phishing_kmeans_panel(
+                features_df=phishing_url_features,
+                metrics_df=text_mining_metrics,
+            )
 
 
 with justification_tab:
