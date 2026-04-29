@@ -19,7 +19,8 @@ team_members = [
         "milestone_1": "Alignment, streamlit app page navigation, threat intel buy-in page",
         "milestone_2": "Data Source Identification and Justification",
         "milestone_3": "Interactive anlytics panel development and write-up",
-        "signature": "Jemima Lumbala (04/22/2026)",
+        "milestone_4": "Operational Triage Dashnoard",
+        "signature": "Jemima Lumbala (04/29/2026)",
     },
     {
         "name": "Abena Darko",
