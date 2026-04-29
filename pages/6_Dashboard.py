@@ -504,7 +504,9 @@ def build_triage_queue(records: pd.DataFrame, assets: pd.DataFrame) -> pd.DataFr
     return queue.sort_values(["risk_score", "date"], ascending=[False, False], na_position="last")
 
 
-cti_dashboard_tab, data_explorer_tab = st.tabs(["CTI Dashboard", "Data Explorer"])
+cti_dashboard_tab, dynamic_explorer_tab, ethics_security_tab = st.tabs(
+    ["CTI Dashboard", "Dynamic Data Explorer", "Ethics & Security"]
+)
 
 
 with cti_dashboard_tab:
@@ -1048,98 +1050,99 @@ def fetch_threatfox_explorer() -> pd.DataFrame:
         return pd.DataFrame()
 
 
-def render_data_explorer_tab() -> None:
-    explorer_tab, ethics_tab = st.tabs(["Dynamic Data Explorer", "Ethics & Security"])
-
-    with explorer_tab:
-        st.subheader("Data Source Notes")
-        st.info("""
+def render_dynamic_data_explorer() -> None:
+    st.subheader("Data Source Notes")
+    st.info("""
 **PhishTank** data is loaded from a local CSV file (`data/phishtank.csv`) containing verified phishing URL records. Each record is a community-verified phishing indicator, making this a high-confidence static dataset.
 
 **ThreatFox** is limited to 100 IOCs per request on the free tier. While this is below the 1,000 row threshold, each record includes malware family, confidence level, and threat type, making even 100 records high-signal for threat hunting purposes.
 """)
 
-        with st.spinner("Fetching live threat intelligence data..."):
-            phishtank_df = fetch_phishtank_explorer()
-            threatfox_df = fetch_threatfox_explorer()
+    with st.spinner("Fetching live threat intelligence data..."):
+        phishtank_df = fetch_phishtank_explorer()
+        threatfox_df = fetch_threatfox_explorer()
 
-        explorer_df = pd.concat([phishtank_df, threatfox_df], ignore_index=True)
+    explorer_df = pd.concat([phishtank_df, threatfox_df], ignore_index=True)
 
-        if explorer_df.empty:
-            st.warning("No data could be loaded from APIs.")
-            return
+    if explorer_df.empty:
+        st.warning("No data could be loaded from APIs.")
+        return
 
-        explorer_df["date"] = pd.to_datetime(explorer_df["date"], errors="coerce", utc=True)
+    explorer_df["date"] = pd.to_datetime(explorer_df["date"], errors="coerce", utc=True)
 
-        filter_cols = st.columns(2)
-        sources = filter_cols[0].multiselect(
-            "Select Data Source",
-            options=sorted(explorer_df["source"].dropna().unique()),
-            default=sorted(explorer_df["source"].dropna().unique()),
-            key="embedded_explorer_sources",
-        )
-        types = filter_cols[1].multiselect(
-            "Select Indicator Type",
-            options=sorted(explorer_df["type"].dropna().unique()),
-            default=sorted(explorer_df["type"].dropna().unique()),
-            key="embedded_explorer_types",
-        )
+    filter_cols = st.columns(2)
+    sources = filter_cols[0].multiselect(
+        "Select Data Source",
+        options=sorted(explorer_df["source"].dropna().unique()),
+        default=sorted(explorer_df["source"].dropna().unique()),
+        key="embedded_explorer_sources",
+    )
+    types = filter_cols[1].multiselect(
+        "Select Indicator Type",
+        options=sorted(explorer_df["type"].dropna().unique()),
+        default=sorted(explorer_df["type"].dropna().unique()),
+        key="embedded_explorer_types",
+    )
 
-        filtered_explorer_df = explorer_df[
-            explorer_df["source"].isin(sources)
-            & explorer_df["type"].isin(types)
-        ]
+    filtered_explorer_df = explorer_df[
+        explorer_df["source"].isin(sources)
+        & explorer_df["type"].isin(types)
+    ]
 
-        st.subheader("Sample Records")
-        st.dataframe(filtered_explorer_df.head(50), use_container_width=True, hide_index=True)
+    st.subheader("Sample Records")
+    st.dataframe(filtered_explorer_df.head(50), use_container_width=True, hide_index=True)
 
-        st.subheader("Summary Statistics")
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Total Records", f"{len(filtered_explorer_df):,}")
-        col2.metric("Unique Indicators", f"{filtered_explorer_df['indicator'].nunique():,}")
+    st.subheader("Summary Statistics")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Records", f"{len(filtered_explorer_df):,}")
+    col2.metric("Unique Indicators", f"{filtered_explorer_df['indicator'].nunique():,}")
 
-        min_date = filtered_explorer_df["date"].min()
-        max_date = filtered_explorer_df["date"].max()
-        if pd.notnull(min_date) and pd.notnull(max_date):
-            col3.metric("Date Range", f"{min_date.date()} to {max_date.date()}")
-        else:
-            col3.metric("Date Range", "N/A")
+    min_date = filtered_explorer_df["date"].min()
+    max_date = filtered_explorer_df["date"].max()
+    if pd.notnull(min_date) and pd.notnull(max_date):
+        col3.metric("Date Range", f"{min_date.date()} to {max_date.date()}")
+    else:
+        col3.metric("Date Range", "N/A")
 
-        st.subheader("Top Indicator Types")
-        top_types = filtered_explorer_df["type"].value_counts().head(10)
-        if top_types.empty:
-            st.info("No indicator types match the current filters.")
-        else:
-            st.bar_chart(top_types)
+    st.subheader("Top Indicator Types")
+    top_types = filtered_explorer_df["type"].value_counts().head(10)
+    if top_types.empty:
+        st.info("No indicator types match the current filters.")
+    else:
+        st.bar_chart(top_types)
 
-        st.subheader("Recent Activity")
-        cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=7)
-        recent_df = filtered_explorer_df[filtered_explorer_df["date"] >= cutoff]
-        st.metric("Records in Last 7 Days", f"{len(recent_df):,}")
+    st.subheader("Recent Activity")
+    cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=7)
+    recent_df = filtered_explorer_df[filtered_explorer_df["date"] >= cutoff]
+    st.metric("Records in Last 7 Days", f"{len(recent_df):,}")
 
-    with ethics_tab:
-        col1, col2 = st.columns([1.2, 1], gap="large")
 
-        with col1:
-            st.subheader("Ethics and Data Governance")
-            st.markdown(
-                """
+def render_ethics_security() -> None:
+    col1, col2 = st.columns([1.2, 1], gap="large")
+
+    with col1:
+        st.subheader("Ethics and Data Governance")
+        st.markdown(
+            """
 1. All data comes from approved documented sources. No stolen or unauthorized data is used.
 2. Only data relevant to the U.S. banking sector is included.
 3. The app does not expose sensitive or proprietary information, or any details that could increase operational risk.
 """
-            )
+        )
 
-        with col2:
-            st.subheader("Security-Aware Development Practices")
-            st.markdown(
-                """
+    with col2:
+        st.subheader("Security-Aware Development Practices")
+        st.markdown(
+            """
 1. Secrets are stored in environment variables and not hardcoded in the codebase.
 2. Request timeouts and error handling prevent hanging API calls and support graceful failure.
 3. `requirements.txt` manages dependencies for consistent development and deployment environments.
 """
-            )
+        )
 
 
-with data_explorer_tab:
-    render_data_explorer_tab()
+with dynamic_explorer_tab:
+    render_dynamic_data_explorer()
+
+with ethics_security_tab:
+    render_ethics_security()
