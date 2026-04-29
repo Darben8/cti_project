@@ -199,7 +199,7 @@ with tab1:
     # LEFT COLUMN
     with col1:
 
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("Key Services and Products")
         st.write("""
         - Retail & commercial banking  
@@ -207,9 +207,9 @@ with tab1:
         - Wealth & investment services  
         - Digital & mobile banking  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("Industry Size and Growth")
         st.write("""
         - Trillions in global assets  
@@ -217,9 +217,9 @@ with tab1:
         - High daily transaction volume  
         - Rapid shift to mobile & cloud banking  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("Major Industry Players")
         st.write("""
         - JPMorgan Chase  
@@ -230,9 +230,9 @@ with tab1:
         - Wells Fargo  
         - MUFG  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("Importance of Information Technology")
         st.write("""
         - Real‑time transaction processing  
@@ -241,9 +241,9 @@ with tab1:
         - Data protection & compliance  
         - Cloud & internet‑facing systems  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("Risk Concentration in Banking")
         st.write("""
         - High-value financial assets  
@@ -251,9 +251,9 @@ with tab1:
         - Constant online exposure  
         - Fast, high-volume transactions  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("Stakeholder Overview")
         st.markdown("""
         **SOC Analysts** – Monitor threats & respond quickly.  
@@ -261,21 +261,21 @@ with tab1:
         **TI Analysts** – Track adversaries & emerging threats.  
         **CISOs/Leadership** – Use intelligence for risk decisions & strategy.  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("User Stories")
         st.markdown("""
         **Jordan (SOC)** – Monitor threats & prioritize risky assets.  
         **Alicia (CISO)** – Track KPIs & guide security investments.  
         **Rahul (TI Analyst)** – Build adversary profiles & trend dashboards.  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
     # RIGHT COLUMN
     with col2:
 
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("CTI Use Case – Fraud Prevention")
         st.markdown("""
         - Detects compromised credentials early  
@@ -283,9 +283,9 @@ with tab1:
         - Reduces fraud lead time  
         - Supports both tactical and executive decision-making  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("Decisions Enabled by CTI")
         st.markdown("""
         - Prioritize high-risk assets  
@@ -293,16 +293,16 @@ with tab1:
         - Understand attacker capabilities  
         - Guide security investments  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("Data & Analytics Used")
         st.markdown("""
         - Dark web & criminal marketplace data  
         - Threat intel feeds (RF, PhishTank, ransomware.live, Shodan, DBIR)  
         - Transaction & behavioral analytics  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
 
     # =============================================
@@ -311,7 +311,7 @@ with tab1:
     with col2:
 
         # CTI Use Case
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("CTI Use Case – Fraud Prevention and Detection")
         st.markdown("""
         Many fraud tools only notify users after fraudulent activity occurs.  
@@ -322,10 +322,10 @@ with tab1:
         - Intelligence-backed prioritization reduces breach likelihood and financial impact.
         - Supports measurable outcomes for both technical teams and executives.
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
         # Decisions Enabled by CTI
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("Decisions Enabled by CTI")
         st.markdown("""
         CTI platforms like Recorded Future enable proactive, intelligence-driven decision making.
@@ -337,17 +337,17 @@ with tab1:
         - Increased visibility into adversary capabilities  
         - Data‑driven cybersecurity investment decisions  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
         # Data & Analytics
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+        
         st.subheader("Data and Analytics Used")
         st.markdown("""
         1. Dark web and criminal marketplace data  
         2. Threat intelligence feeds (Recorded Future, PhishTank, ransomware.live, Shodan, DBIR)  
         3. Transaction & behavioral analytics (internal fraud monitoring systems)  
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
+        
 
 
 with tab2:
@@ -357,7 +357,7 @@ with tab2:
     # -------------------------
     # Key Threat Trends (Card)
     # -------------------------
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+    
     st.subheader("Key Threat Trends")
 
     st.markdown("""
@@ -381,12 +381,12 @@ with tab2:
     - **Relevance to Banking:** Targets digital channels used for customer access and transactions.  
     - **MITRE ATT&CK:** T1190, T1505  
     """)
-    st.markdown('</div>', unsafe_allow_html=True)
+    
 
     # -------------------------
     # Global & U.S. Context (Card)
     # -------------------------
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+    
     st.subheader("Global and U.S. Context")
 
     st.markdown("""
@@ -395,12 +395,12 @@ with tab2:
     - U.S. banks remain attractive due to monetizable data, direct payment capabilities, and customer‑facing digital channels.  
     - AI‑enabled phishing and fraud campaigns increase the speed, scale, and personalization of social engineering.  
     """)
-    st.markdown('</div>', unsafe_allow_html=True)
+    
 
     # -------------------------
     # Threat Intel Sources (Card)
     # -------------------------
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+    
     st.subheader("Threat Intel Sources in Scope")
 
     st.markdown("""
@@ -411,7 +411,7 @@ with tab2:
     These sources support early CTI triage by helping analysts monitor active phishing, ransomware reporting,  
     and external exposure trends relevant to the U.S. banking sector.
     """)
-    st.markdown('</div>', unsafe_allow_html=True)
+    
 
 with tab3:
     st.title("Intelligence Buy-In")
@@ -420,7 +420,7 @@ with tab3:
     # =========================
     # CURRENT THREAT LANDSCAPE
     # =========================
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+    
     st.subheader("Current Threat Landscape")
 
     st.markdown("""
@@ -435,23 +435,22 @@ with tab3:
     - 13% faced attacks on AI systems  
     - 97% of AI breaches lacked proper access controls  
     """)
-    st.markdown('</div>', unsafe_allow_html=True)
+    
 
     # =========================
     # BREACH FREQUENCY
     # =========================
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+    
     st.subheader("Frequency of Security Breaches")
 
     st.markdown("Cyber incidents are now expected events across financial institutions.")
     st.metric("Banks Reporting Incidents (Past Year)", "81%")
     st.markdown("Most banks experience at least one significant security event annually.")
-    st.markdown('</div>', unsafe_allow_html=True)
-
+    
     # =========================
     # IMPACT ON STRATEGY
     # =========================
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+    
     st.subheader("Impact on Organizational Strategy")
 
     st.markdown("""
@@ -461,12 +460,12 @@ with tab3:
     - Legacy systems create visibility gaps  
     - CTI helps prioritize and mitigate threats proactively  
     """)
-    st.markdown('</div>', unsafe_allow_html=True)
+    
 
     # =========================
     # COST OF DATA BREACHES
     # =========================
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+    
     st.subheader("Cost of Data Breaches")
 
     col1, col2 = st.columns(2)
@@ -480,12 +479,12 @@ with tab3:
     - Shadow AI adds ~$670K per breach  
     - Costs include recovery, fines, downtime, and reputational loss  
     """)
-    st.markdown('</div>', unsafe_allow_html=True)
+    
 
     # =========================
     # VALUE OF CTI
     # =========================
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+    
     st.subheader("Value of Intelligence-Based Security")
 
     st.markdown("""
@@ -498,23 +497,22 @@ with tab3:
 
     CTI helps banks stay ahead of threats rather than reacting after damage occurs.
     """)
-    st.markdown('</div>', unsafe_allow_html=True)
+   
 
 with tab4:
     st.title("Critical Assets")
     st.caption("Priority banking assets, their business value, and operational impact if compromised.")
 
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+    
     st.subheader("Critical Asset Table")
 
     assets = pd.read_csv("data/critical_assets.csv")
-    st.dataframe(assets, use_container_width=True, hide_index=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    
 
     # -------------------------
     # Justification (Shortened)
     # -------------------------
-    st.markdown('<div class="info-card">', unsafe_allow_html=True)
+   
     st.subheader("Critical Asset Justification")
 
     st.markdown("""
@@ -526,7 +524,7 @@ with tab4:
     - **Security Operations Tools:** Required for detection, response, and incident containment.  
     - **Tokenized Asset Platforms:** Emerging systems with integrity and custody risks.  
     """)
-    st.markdown('</div>', unsafe_allow_html=True)
+
 with tab5:
     st.title("💎 Diamond Models (Banking Threat Scenarios)")
     st.caption("Two complete, realistic Diamond Models aligned to banking threat trends.")
