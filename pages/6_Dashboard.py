@@ -1,6 +1,7 @@
 """Unified CTI dashboard for local datasets and live source summaries."""
 
 import os
+import hashlib
 from datetime import datetime, timedelta, timezone
 
 from datetime import datetime
@@ -94,7 +95,7 @@ def normalize_ioc_df(df: pd.DataFrame, source_name: str) -> pd.DataFrame:
     working = df.copy()
     lower_map = {col.lower().strip(): col for col in working.columns}
 
-    indicator_col = lower_map.get("indicator") or lower_map.get("ioc")
+    indicator_col = lower_map.get("indicator") or lower_map.get("ioc") or lower_map.get("ioc_value")
     type_col = lower_map.get("type") or lower_map.get("ioc_type") or lower_map.get("ioc type")
     category_col = lower_map.get("ioc type") or lower_map.get("threat_type") or lower_map.get("category")
     date_col = lower_map.get("first seen") or lower_map.get("first_seen") or lower_map.get("date")
@@ -247,6 +248,91 @@ def build_asset_alignment(assets_df: pd.DataFrame) -> pd.DataFrame:
     return aligned
 
 
+def alert_id_for_row(row: pd.Series) -> str:
+    fingerprint = "|".join(
+        [
+            str(row.get("source", "")),
+            str(row.get("indicator", "")),
+            str(row.get("type", "")),
+            str(row.get("date", "")),
+        ]
+    )
+    return f"AL-{hashlib.sha1(fingerprint.encode('utf-8')).hexdigest()[:8].upper()}"
+
+
+def recommended_action_for_row(row: pd.Series) -> str:
+    category = str(row.get("category", "")).lower()
+    indicator_type = str(row.get("type", "")).lower()
+    asset = str(row.get("asset", "")).lower()
+    tags = str(row.get("tags", "")).lower()
+
+    if "ransomware" in category or "victim" in indicator_type:
+        return "Escalate to incident command, validate affected entity, and review backups."
+    if "phishing" in category or "url" in indicator_type:
+        return "Block URL/domain, submit takedown request, and search proxy logs."
+    if any(token in category + tags for token in ["malware", "botnet", "trojan", "emotet", "qakbot"]):
+        return "Hunt for matching IOCs in EDR/SIEM and isolate confirmed hosts."
+    if any(token in indicator_type for token in ["ip", "domain", "host"]):
+        return "Add detection rule, enrich with passive DNS, and review firewall traffic."
+    if "customer data" in asset:
+        return "Prioritize data-access log review and credential reset checks."
+    return "Enrich indicator, validate source confidence, and monitor for internal matches."
+
+
+def build_triage_queue(records: pd.DataFrame, assets: pd.DataFrame) -> pd.DataFrame:
+    if records.empty:
+        return pd.DataFrame()
+
+    queue = records.copy()
+    criticality = assets.set_index("alignment_group")["criticality_1_low_5_high"].to_dict()
+    queue["asset_criticality"] = queue["asset"].map(criticality).fillna(3).astype(float)
+    queue["date"] = pd.to_datetime(queue["date"], errors="coerce", utc=True)
+    now_utc = pd.Timestamp.now(tz="UTC")
+    queue["age_days"] = (now_utc - queue["date"]).dt.days
+    queue["age_days"] = queue["age_days"].fillna(90).clip(lower=0)
+
+    category_text = queue["category"].fillna("").astype(str).str.lower()
+    type_text = queue["type"].fillna("").astype(str).str.lower()
+    tag_text = queue["tags"].fillna("").astype(str).str.lower()
+
+    queue["risk_score"] = 20
+    queue.loc[category_text.str.contains("ransomware|botnet|malware", regex=True), "risk_score"] += 30
+    queue.loc[category_text.str.contains("phishing|credential", regex=True), "risk_score"] += 24
+    queue.loc[type_text.str.contains("url|domain|ip|sha|md5", regex=True), "risk_score"] += 12
+    queue.loc[tag_text.str.contains("bank|finance|emotet|qakbot|dridex|gozi|icedid", regex=True), "risk_score"] += 12
+    queue["risk_score"] += (queue["asset_criticality"] * 6).round().astype(int)
+    queue.loc[queue["age_days"] <= 7, "risk_score"] += 10
+    queue.loc[(queue["age_days"] > 7) & (queue["age_days"] <= 30), "risk_score"] += 5
+    queue["risk_score"] = queue["risk_score"].clip(upper=100).astype(int)
+
+    queue["severity"] = pd.cut(
+        queue["risk_score"],
+        bins=[-1, 34, 59, 79, 100],
+        labels=["Low", "Medium", "High", "Critical"],
+    ).astype(str)
+    queue["triage_status"] = queue["severity"].map(
+        {
+            "Critical": "Escalate",
+            "High": "Investigate",
+            "Medium": "Review",
+            "Low": "Monitor",
+        }
+    )
+    queue["recommended_action"] = queue.apply(recommended_action_for_row, axis=1)
+    queue["sla"] = queue["severity"].map(
+        {
+            "Critical": "30 minutes",
+            "High": "4 hours",
+            "Medium": "1 business day",
+            "Low": "3 business days",
+        }
+    )
+    queue["alert_id"] = queue.apply(alert_id_for_row, axis=1)
+    queue["last_seen"] = queue["date"].dt.strftime("%Y-%m-%d").fillna("Unknown")
+
+    return queue.sort_values(["risk_score", "date"], ascending=[False, False], na_position="last")
+
+
 with st.spinner("Loading local and live intelligence sources..."):
     records_df = pd.concat(
         [
@@ -273,9 +359,9 @@ with st.expander("**📈 Milestone 3**"):
     with col1:
             # 1. TEMPORAL TREND (Replaces or Augments your current Ransomware Activity)
             st.write("Preliminary Visualizations #1")
-            with st.expander("Cyber Threat Activity Over Time"):
-                source_options = sorted(records_df["source"].dropna().unique().tolist())
-                selected_sources = st.multiselect(
+            st.markdown("#### Cyber Threat Activity Over Time")
+            source_options = sorted(records_df["source"].dropna().unique().tolist())
+            selected_sources = st.multiselect(
                 "Filter by data source",
                 #options=["PhishTank CSV", "combined_iocs.csv", "ransomware.live"],
                 options=source_options,
@@ -283,43 +369,43 @@ with st.expander("**📈 Milestone 3**"):
                 key="m3_dashboard_selector"
             )
 
-                filtered_df = records_df[records_df["source"].isin(selected_sources)].copy()   
-                # We look for common date columns in your CSVs
-                date_col = None
-                for col in ['date', 'first_seen_utc', 'timestamp']:
-                    if col in filtered_df.columns:
-                        date_col = col
-                        break
+            filtered_df = records_df[records_df["source"].isin(selected_sources)].copy()
+            # We look for common date columns in your CSVs
+            date_col = None
+            for col in ['date', 'first_seen_utc', 'timestamp']:
+                if col in filtered_df.columns:
+                    date_col = col
+                    break
 
-                if date_col:
-                    filtered_df[date_col] = pd.to_datetime(filtered_df[date_col])
-                    trend_data = filtered_df.groupby(filtered_df[date_col].dt.date).size().reset_index(name='Count')
-                    
-                    line_chart = alt.Chart(trend_data).mark_line(point=True, color='#FF4B4B').encode(
-                        x=alt.X(f'{date_col}:T', title='Timeline'),
-                        y=alt.Y('Count:Q', title='IOC Volume'),
-                        tooltip=[date_col, 'Count']
-                    ).properties(height=350).interactive()
-                    
-                    st.altair_chart(line_chart, use_container_width=True)
+            if date_col:
+                filtered_df[date_col] = pd.to_datetime(filtered_df[date_col])
+                trend_data = filtered_df.groupby(filtered_df[date_col].dt.date).size().reset_index(name='Count')
 
-                    # MANDATORY DESCRIPTION BLOCK
-                    with st.expander("📝 Visualization Analysis: Process, Data & Value"):
-                        st.markdown(f"""
-                        - **Process:** We performed a temporal aggregation by normalizing the `{date_col}` field into daily buckets. This involved converting raw string timestamps into datetime objects to visualize the velocity of threats.
-                        - **Data Used:** This visualization draws from the **Ransomware.live** , **ThreatFox** , and **PhishTank** datasets currently loaded in the dashboard.
-                        - **Value:** Identifying peaks in activity allows the bank to correlate external threat surges with internal log anomalies, assisting in proactive resource shifting during high-attack periods.
-                        """)
-                else:
-                    st.error("Could not find a date column for the temporal trend chart.")
+                line_chart = alt.Chart(trend_data).mark_line(point=True, color='#FF4B4B').encode(
+                    x=alt.X(f'{date_col}:T', title='Timeline'),
+                    y=alt.Y('Count:Q', title='IOC Volume'),
+                    tooltip=[date_col, 'Count']
+                ).properties(height=350).interactive()
+
+                st.altair_chart(line_chart, use_container_width=True)
+
+                # MANDATORY DESCRIPTION BLOCK
+                st.markdown("##### Visualization Analysis: Process, Data & Value")
+                st.markdown(f"""
+                - **Process:** We performed a temporal aggregation by normalizing the `{date_col}` field into daily buckets. This involved converting raw string timestamps into datetime objects to visualize the velocity of threats.
+                - **Data Used:** This visualization draws from the **Ransomware.live** , **ThreatFox** , and **PhishTank** datasets currently loaded in the dashboard.
+                - **Value:** Identifying peaks in activity allows the bank to correlate external threat surges with internal log anomalies, assisting in proactive resource shifting during high-attack periods.
+                """)
+            else:
+                st.error("Could not find a date column for the temporal trend chart.")
 
    # st.divider()
     with col2:
             st.write("Preliminary Visualizations #2")
             # 2. CATEGORY DISTRIBUTION (Replaces your current Indicator Type Distribution)
-            with st.expander("Distribution of Threat Categories"):
-                source_options = sorted(records_df["source"].dropna().unique().tolist())
-                selected_sources = st.multiselect(
+            st.markdown("#### Distribution of Threat Categories")
+            source_options = sorted(records_df["source"].dropna().unique().tolist())
+            selected_sources = st.multiselect(
                 "Filter by data source",
                 #options=["PhishTank CSV", "combined_iocs.csv", "ransomware.live"],
                 options=source_options,
@@ -327,30 +413,30 @@ with st.expander("**📈 Milestone 3**"):
                 key="m32_dashboard_selector"
             )
 
-                filtered_df = records_df[records_df["source"].isin(selected_sources)].copy()
-                # Checking for category or type columns
-                class_col = 'category' if 'category' in filtered_df.columns else 'type'
+            filtered_df = records_df[records_df["source"].isin(selected_sources)].copy()
+            # Checking for category or type columns
+            class_col = 'category' if 'category' in filtered_df.columns else 'type'
 
-                if class_col in filtered_df.columns:
-                    cat_counts = filtered_df[class_col].value_counts().head(10).reset_index()
-                    cat_counts.columns = ['Threat Type', 'Count']
-                    
-                    bar_chart = alt.Chart(cat_counts).mark_bar().encode(
-                        x=alt.X('Count:Q', title='Frequency'),
-                        y=alt.Y('Threat Type:N', sort='-x', title='Classification'),
-                        color=alt.Color('Count:Q', scale=alt.Scale(scheme='viridis')),
-                        tooltip=['Threat Type', 'Count']
-                    ).properties(height=350)
-                    
-                    st.altair_chart(bar_chart, use_container_width=True)
+            if class_col in filtered_df.columns:
+                cat_counts = filtered_df[class_col].value_counts().head(10).reset_index()
+                cat_counts.columns = ['Threat Type', 'Count']
 
-                    # MANDATORY DESCRIPTION BLOCK
-                    with st.expander("📝 Visualization Analysis: Process, Data & Value"):
-                        st.markdown(f"""
-                        - **Process:** We utilized categorical frequency counting on the `{class_col}` attribute. We filtered for the top 10 classifications to ensure the visualization remains focused on the most critical threats.
-                        - **Data Used:** Sourced from the **combined_iocs.csv** which aggregates multiple intelligence feeds.
-                        - **Value:** This chart highlights which attack vectors (e.g., Phishing vs. Malware) are most prevalent. For a bank, seeing 'Phishing' as the top category justifies prioritizing email filtering and employee training over other security spends.
-                        """)
+                bar_chart = alt.Chart(cat_counts).mark_bar().encode(
+                    x=alt.X('Count:Q', title='Frequency'),
+                    y=alt.Y('Threat Type:N', sort='-x', title='Classification'),
+                    color=alt.Color('Count:Q', scale=alt.Scale(scheme='viridis')),
+                    tooltip=['Threat Type', 'Count']
+                ).properties(height=350)
+
+                st.altair_chart(bar_chart, use_container_width=True)
+
+                # MANDATORY DESCRIPTION BLOCK
+                st.markdown("##### Visualization Analysis: Process, Data & Value")
+                st.markdown(f"""
+                - **Process:** We utilized categorical frequency counting on the `{class_col}` attribute. We filtered for the top 10 classifications to ensure the visualization remains focused on the most critical threats.
+                - **Data Used:** Sourced from the **combined_iocs.csv** which aggregates multiple intelligence feeds.
+                - **Value:** This chart highlights which attack vectors (e.g., Phishing vs. Malware) are most prevalent. For a bank, seeing 'Phishing' as the top category justifies prioritizing email filtering and employee training over other security spends.
+                """)
 
     # --- ADDED FOR MILESTONE 3: OPERATIONAL METRICS ---
     st.divider()
@@ -376,12 +462,12 @@ with st.expander("**📈 Milestone 3**"):
     """)
     st.divider()
 
-    with st.expander("⚠️ Validation and Error Analysis"):
-        st.info("""
-        - **Assumptions:** *We assume the *'category' field* in the unified CSV accurately reflects the primary intent of the threat actor.*
-        - **Limitations:** *Data is limited to public feeds; highly targeted *_spear-phishing_* campaigns against specific banking personnel may not appear in these datasets.*
-        - **Validation:** *Results were validated through *manual spot-checks* of the top 50 IOCs against VirusTotal to ensure **100% consistency** in malicious classification.*
-        """)
+    st.markdown("#### Validation and Error Analysis")
+    st.info("""
+    - **Assumptions:** *We assume the *'category' field* in the unified CSV accurately reflects the primary intent of the threat actor.*
+    - **Limitations:** *Data is limited to public feeds; highly targeted *_spear-phishing_* campaigns against specific banking personnel may not appear in these datasets.*
+    - **Validation:** *Results were validated through *manual spot-checks* of the top 50 IOCs against VirusTotal to ensure **100% consistency** in malicious classification.*
+    """)
 st.divider()   
 
 source_options = sorted(records_df["source"].dropna().unique().tolist())
@@ -410,6 +496,136 @@ with col4:
     valid_dates = filtered_df["date"].dropna()
     coverage = "N/A" if valid_dates.empty else f"{valid_dates.min().date()} to {valid_dates.max().date()}"
     st.metric("Date Coverage", coverage)
+
+st.subheader("Operational Triage Dashboard")
+triage_df = build_triage_queue(filtered_df, critical_assets_df)
+
+if triage_df.empty:
+    st.info("No alerts are available for triage with the current source filters.")
+else:
+    triage_metrics = st.columns(5)
+    triage_metrics[0].metric("Open Alerts", f"{len(triage_df):,}")
+    triage_metrics[1].metric("Critical", f"{(triage_df['severity'] == 'Critical').sum():,}")
+    triage_metrics[2].metric("High", f"{(triage_df['severity'] == 'High').sum():,}")
+    triage_metrics[3].metric("Assets Affected", f"{triage_df['asset'].nunique():,}")
+    triage_metrics[4].metric("Top Risk Score", f"{triage_df['risk_score'].max():,}")
+
+    filter_cols = st.columns([1, 1.2, 1.4, 1, 1.4])
+    severity_order = ["Critical", "High", "Medium", "Low"]
+    selected_severities = filter_cols[0].multiselect(
+        "Severity",
+        severity_order,
+        default=severity_order,
+        key="triage_severity_filter",
+    )
+    selected_assets = filter_cols[1].multiselect(
+        "Critical asset",
+        sorted(triage_df["asset"].dropna().unique().tolist()),
+        default=[],
+        placeholder="All assets",
+        key="triage_asset_filter",
+    )
+    selected_categories = filter_cols[2].multiselect(
+        "Threat category",
+        sorted(triage_df["category"].fillna("Unknown").astype(str).unique().tolist()),
+        default=[],
+        placeholder="All categories",
+        key="triage_category_filter",
+    )
+    selected_statuses = filter_cols[3].multiselect(
+        "Status",
+        ["Escalate", "Investigate", "Review", "Monitor", "Closed", "False Positive"],
+        default=[],
+        placeholder="All statuses",
+        key="triage_status_filter",
+    )
+    triage_search = filter_cols[4].text_input(
+        "Search alerts",
+        placeholder="Indicator, tag, source, or action",
+        key="triage_search_filter",
+    ).strip()
+
+    triage_view = triage_df.copy()
+    if selected_severities:
+        triage_view = triage_view[triage_view["severity"].isin(selected_severities)]
+    if selected_assets:
+        triage_view = triage_view[triage_view["asset"].isin(selected_assets)]
+    if selected_categories:
+        triage_view = triage_view[triage_view["category"].fillna("Unknown").astype(str).isin(selected_categories)]
+    if selected_statuses:
+        triage_view = triage_view[triage_view["triage_status"].isin(selected_statuses)]
+    if triage_search:
+        search_text = triage_search.lower()
+        search_frame = triage_view[
+            ["indicator", "source", "type", "category", "tags", "asset", "recommended_action"]
+        ].fillna("").astype(str)
+        triage_view = triage_view[search_frame.apply(lambda row: search_text in " ".join(row).lower(), axis=1)]
+
+    st.caption(
+        "Risk score combines threat category, indicator type, asset criticality, finance-sector tags, and recency."
+    )
+
+    alert_cols = [
+        "alert_id",
+        "severity",
+        "risk_score",
+        "triage_status",
+        "sla",
+        "source",
+        "asset",
+        "indicator",
+        "type",
+        "category",
+        "last_seen",
+        "recommended_action",
+    ]
+    edited_triage = st.data_editor(
+        triage_view[alert_cols].head(250),
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "triage_status": st.column_config.SelectboxColumn(
+                "triage_status",
+                options=["Escalate", "Investigate", "Review", "Monitor", "Closed", "False Positive"],
+                help="Update the analyst workflow state for this dashboard session.",
+            ),
+            "risk_score": st.column_config.ProgressColumn(
+                "risk_score",
+                min_value=0,
+                max_value=100,
+                format="%d",
+            ),
+            "recommended_action": st.column_config.TextColumn("recommended_action", width="large"),
+            "indicator": st.column_config.TextColumn("indicator", width="large"),
+        },
+        disabled=[
+            "alert_id",
+            "severity",
+            "risk_score",
+            "sla",
+            "source",
+            "asset",
+            "indicator",
+            "type",
+            "category",
+            "last_seen",
+            "recommended_action",
+        ],
+        key="triage_alert_editor",
+    )
+
+    export_csv = edited_triage.to_csv(index=False).encode("utf-8")
+    export_left, export_right = st.columns([1, 4])
+    with export_left:
+        st.download_button(
+            "Export queue CSV",
+            data=export_csv,
+            file_name=f"operational_triage_queue_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+    with export_right:
+        st.info(f"Showing {len(edited_triage):,} of {len(triage_view):,} alerts after triage filters.")
 
 # st.subheader("Timeline by Source")
 # timeline_df = (
