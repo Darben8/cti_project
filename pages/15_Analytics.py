@@ -18,6 +18,7 @@ TEXT_MINING_DIR = PROJECT_ROOT / "data" / "phishing_url_text_mining"
 THREATFOX_KMEANS_DIR = PROJECT_ROOT / "data" / "kmeans_validation"
 CRITICAL_ASSETS_PATH = PROJECT_ROOT / "data" / "critical_assets.csv"
 PHISHING_RAW_PATH = PROJECT_ROOT / "data" / "verified_online_banking_finance.csv"
+FINANCE_VICTIMS_PATH = PROJECT_ROOT / "data" / "finance_victims.csv"
 
 PAGE_COLORS = {
     "group": "#C73E1D",
@@ -79,6 +80,106 @@ def load_phishing_raw() -> pd.DataFrame:
     if "submission_time" in df.columns:
         df["submission_time"] = pd.to_datetime(df["submission_time"], errors="coerce", utc=True)
     return df
+
+
+def empty_records_df() -> pd.DataFrame:
+    return pd.DataFrame(
+        columns=["indicator", "type", "category", "source", "date", "tags", "record_kind", "asset"]
+    )
+
+
+def classify_asset(indicator: str, category: str, tags: str, source: str) -> str:
+    text = " ".join([str(indicator), str(category), str(tags), str(source)]).lower()
+
+    if any(token in text for token in ["phishing", "login", "credential", "url"]):
+        return "Online and mobile banking platforms"
+    if any(token in text for token in ["domain", "ipv4", "host", "port", "exposure", "ip:port"]):
+        return "Internet-facing infrastructure"
+    if any(token in text for token in ["dridex", "qakbot", "gozi", "icedid", "malware", "sha256", "md5"]):
+        return "Customer data repositories"
+    if any(token in text for token in ["ransomware", "victim"]):
+        return "Core banking systems"
+    return "Security operations stack (SIEM/EDR/SOAR)"
+
+
+def normalize_ioc_df(df: pd.DataFrame, source_name: str) -> pd.DataFrame:
+    if df.empty:
+        return empty_records_df()
+
+    working = df.copy()
+    lower_map = {col.lower().strip(): col for col in working.columns}
+
+    indicator_col = lower_map.get("indicator") or lower_map.get("ioc") or lower_map.get("ioc_value")
+    type_col = lower_map.get("type") or lower_map.get("ioc_type") or lower_map.get("ioc type")
+    category_col = lower_map.get("ioc type") or lower_map.get("threat_type") or lower_map.get("category")
+    date_col = lower_map.get("first seen") or lower_map.get("first_seen") or lower_map.get("date") or lower_map.get("first_seen_utc")
+    tags_col = lower_map.get("tags") or lower_map.get("malware") or lower_map.get("malware_printable")
+
+    normalized = pd.DataFrame()
+    normalized["indicator"] = working[indicator_col] if indicator_col else ""
+    normalized["type"] = working[type_col] if type_col else "unknown"
+    normalized["category"] = working[category_col] if category_col else normalized["type"]
+    normalized["source"] = source_name
+    normalized["date"] = pd.to_datetime(
+        working[date_col] if date_col else pd.NaT,
+        errors="coerce",
+        dayfirst=True,
+        utc=True,
+    )
+    normalized["tags"] = working[tags_col] if tags_col else ""
+    normalized["record_kind"] = "ioc"
+    normalized["asset"] = normalized.apply(
+        lambda row: classify_asset(row["indicator"], row["category"], row["tags"], row["source"]),
+        axis=1,
+    )
+    return normalized[["indicator", "type", "category", "source", "date", "tags", "record_kind", "asset"]]
+
+
+@st.cache_data
+def build_executive_records() -> pd.DataFrame:
+    records: list[pd.DataFrame] = []
+
+    phishing_df = load_phishing_raw()
+    if not phishing_df.empty:
+        phishing_records = pd.DataFrame()
+        phishing_records["indicator"] = phishing_df["url"]
+        phishing_records["type"] = "url"
+        phishing_records["category"] = "phishing"
+        phishing_records["source"] = "Verified Banking Phishing"
+        phishing_records["date"] = pd.to_datetime(phishing_df["submission_time"], errors="coerce", utc=True)
+        phishing_records["tags"] = phishing_df["target"].fillna("") + " " + phishing_df["banking_match_term"].fillna("")
+        phishing_records["record_kind"] = "ioc"
+        phishing_records["asset"] = phishing_records.apply(
+            lambda row: classify_asset(row["indicator"], row["category"], row["tags"], row["source"]),
+            axis=1,
+        )
+        records.append(
+            phishing_records[["indicator", "type", "category", "source", "date", "tags", "record_kind", "asset"]]
+        )
+
+    threatfox_df = load_table(THREATFOX_PATH)
+    if not threatfox_df.empty:
+        records.append(normalize_ioc_df(threatfox_df, "ThreatFox"))
+
+    if FINANCE_VICTIMS_PATH.exists():
+        victims_df = pd.read_csv(FINANCE_VICTIMS_PATH)
+        if not victims_df.empty:
+            victims_records = pd.DataFrame()
+            victims_records["indicator"] = victims_df["victim_name"].fillna(victims_df.get("website", "ransomware victim"))
+            victims_records["type"] = "victim"
+            victims_records["category"] = "ransomware"
+            victims_records["source"] = "Finance Victims"
+            victims_records["date"] = pd.to_datetime(victims_df["discovered"], errors="coerce", utc=True)
+            victims_records["tags"] = victims_df["group"].fillna("") + " " + victims_df["country"].fillna("")
+            victims_records["record_kind"] = "victim"
+            victims_records["asset"] = "Core banking systems"
+            records.append(
+                victims_records[["indicator", "type", "category", "source", "date", "tags", "record_kind", "asset"]]
+            )
+
+    if not records:
+        return empty_records_df()
+    return pd.concat(records, ignore_index=True)
 
 
 def has_columns(df: pd.DataFrame, required: list[str]) -> bool:
@@ -967,11 +1068,102 @@ def build_asset_priority_table(assets_df: pd.DataFrame) -> pd.DataFrame:
     return selected_assets[["asset", "risk_level", "why_priority", "immediate_decision"]]
 
 
+def build_asset_threat_figure(records_df: pd.DataFrame, assets_df: pd.DataFrame) -> go.Figure:
+    if records_df.empty or assets_df.empty:
+        return go.Figure()
+
+    asset_threat_counts = (
+        records_df.groupby("asset", as_index=False)
+        .size()
+        .rename(columns={"size": "threat_count", "asset": "mapped_asset"})
+    )
+
+    asset_bar_df = assets_df.merge(
+        asset_threat_counts,
+        left_on="asset",
+        right_on="mapped_asset",
+        how="left",
+    ).fillna({"threat_count": 0})
+
+    fig = px.bar(
+        asset_bar_df.sort_values(["threat_count", "criticality_1_low_5_high"], ascending=[False, False]),
+        x="threat_count",
+        y="asset",
+        orientation="h",
+        color="criticality_1_low_5_high",
+        color_continuous_scale=["#43aa8b", "#90be6d", "#f9c74f", "#f3722c", "#f94144"],
+        labels={
+            "threat_count": "Mapped Threat Count",
+            "asset": "Critical Asset",
+            "criticality_1_low_5_high": "Criticality",
+        },
+    )
+    fig.update_layout(
+        plot_bgcolor="#f8fff7",
+        paper_bgcolor="#f8fff7",
+        coloraxis_showscale=False,
+        margin=dict(l=10, r=10, t=10, b=10),
+    )
+    return fig
+
+
+def build_top_ransomware_figure(top_groups: pd.DataFrame) -> go.Figure:
+    if top_groups.empty:
+        return go.Figure()
+
+    plot_df = top_groups.sort_values("risk_score", ascending=False).head(5).copy()
+    fig = px.bar(
+        plot_df.sort_values("risk_score", ascending=True),
+        x="risk_score",
+        y="display_group",
+        orientation="h",
+        color="risk_score",
+        color_continuous_scale="OrRd",
+        labels={"risk_score": "Risk Score", "display_group": "Ransomware Group"},
+    )
+    fig.update_layout(coloraxis_showscale=False, margin=dict(l=10, r=10, t=10, b=10))
+    return fig
+
+
+def build_threatfox_cluster_figure(features_df: pd.DataFrame) -> go.Figure:
+    required_columns = ["cluster", "malware_printable", "ioc_id"]
+    if not has_columns(features_df, required_columns):
+        return go.Figure()
+
+    cluster_summary = (
+        features_df.groupby("cluster")
+        .agg(
+            ioc_count=("ioc_id", "count"),
+            dominant_malware=("malware_printable", lambda s: s.mode().iloc[0] if not s.mode().empty else "Unknown"),
+        )
+        .reset_index()
+    )
+    fig = px.bar(
+        cluster_summary,
+        x="cluster",
+        y="ioc_count",
+        color="dominant_malware",
+        labels={"cluster": "Cluster ID", "ioc_count": "ThreatFox IOCs", "dominant_malware": "Dominant Malware"},
+    )
+    fig.update_layout(margin=dict(l=10, r=10, t=10, b=10))
+    return fig
+
+
+def jump_to_analyst_view(analysis_mode: str, kmeans_mode: str | None = None) -> None:
+    st.session_state["pending_analytics_view"] = "Analyst Drill-Down"
+    st.session_state["pending_analysis_mode_analytics"] = analysis_mode
+    if kmeans_mode is not None:
+        st.session_state["pending_kmeans_mode_analytics"] = kmeans_mode
+    st.rerun()
+
+
 def render_executive_summary(
     top_groups: pd.DataFrame,
     phishing_df: pd.DataFrame,
     group_ioc_types: pd.DataFrame,
     critical_assets_df: pd.DataFrame,
+    executive_records_df: pd.DataFrame,
+    threatfox_clustered_iocs: pd.DataFrame,
 ) -> None:
     st.markdown(
         """
@@ -1019,6 +1211,45 @@ def render_executive_summary(
     metric_cols[0].metric("Top Active Threat", top_threat)
     metric_cols[1].metric("Highest Risk Asset", highest_risk_asset)
     metric_cols[2].metric("Immediate Action Priority", immediate_priority)
+
+    chart_left, chart_right = st.columns(2, gap="large")
+    with chart_left:
+        if st.button(
+            "Threat Counts Aligned to Critical Assets",
+            key="goto_asset_chart",
+            use_container_width=True,
+        ):
+            jump_to_analyst_view("Event Correlation")
+        asset_fig = build_asset_threat_figure(executive_records_df, critical_assets_df)
+        if asset_fig.data:
+            st.plotly_chart(asset_fig, use_container_width=True)
+        else:
+            st.info("Threat-to-asset alignment could not be generated.")
+
+    with chart_right:
+        if st.button(
+            "Top Ransomware Groups by Risk Score",
+            key="goto_risk_groups",
+            use_container_width=True,
+        ):
+            jump_to_analyst_view("Event Correlation")
+        ransomware_fig = build_top_ransomware_figure(top_groups)
+        if ransomware_fig.data:
+            st.plotly_chart(ransomware_fig, use_container_width=True)
+        else:
+            st.info("Top ransomware group view could not be generated.")
+
+    if st.button(
+        "ThreatFox Records per Cluster",
+        key="goto_threatfox_clusters",
+        use_container_width=True,
+    ):
+        jump_to_analyst_view("K-Means", "ThreatFox Malware Clustering")
+    cluster_fig = build_threatfox_cluster_figure(threatfox_clustered_iocs)
+    if cluster_fig.data:
+        st.plotly_chart(cluster_fig, use_container_width=True)
+    else:
+        st.info("ThreatFox cluster chart could not be generated.")
 
     st.markdown("### 2. Top Intelligence Findings")
     for card in build_top_finding_cards(top_groups, phishing_df, group_ioc_types):
@@ -1431,6 +1662,7 @@ threatfox_kmeans_metrics = load_table(THREATFOX_KMEANS_DIR / "kmeans_validation_
 threatfox_clustered_iocs = load_table(THREATFOX_KMEANS_DIR / "iocs_with_clusters.csv")
 critical_assets_df = load_critical_assets()
 phishing_df = load_phishing_raw()
+executive_records_df = build_executive_records()
 
 if group_summary.empty:
     st.warning(
@@ -1535,19 +1767,43 @@ else:
     filtered_df = pd.DataFrame(columns=["group", "indicator", "type", "confidence", "source"])
 
 
-executive_tab, analyst_tab, justification_tab = st.tabs(
-    ["Executive Summary", "Analyst Drill-Down", "Approach Justification"]
+if "analytics_view" not in st.session_state:
+    st.session_state["analytics_view"] = "Executive Summary"
+if "analysis_mode_analytics" not in st.session_state:
+    st.session_state["analysis_mode_analytics"] = "Event Correlation"
+if "kmeans_mode_analytics" not in st.session_state:
+    st.session_state["kmeans_mode_analytics"] = "ThreatFox Malware Clustering"
+
+if "pending_analytics_view" in st.session_state:
+    st.session_state["analytics_view"] = st.session_state.pop("pending_analytics_view")
+if "pending_analysis_mode_analytics" in st.session_state:
+    st.session_state["analysis_mode_analytics"] = st.session_state.pop(
+        "pending_analysis_mode_analytics"
+    )
+if "pending_kmeans_mode_analytics" in st.session_state:
+    st.session_state["kmeans_mode_analytics"] = st.session_state.pop(
+        "pending_kmeans_mode_analytics"
+    )
+
+st.radio(
+    "View",
+    ["Executive Summary", "Analyst Drill-Down", "Approach Justification"],
+    horizontal=True,
+    key="analytics_view",
+    label_visibility="collapsed",
 )
 
-with executive_tab:
+if st.session_state["analytics_view"] == "Executive Summary":
     render_executive_summary(
         top_groups=top_groups,
         phishing_df=phishing_df,
         group_ioc_types=group_ioc_types,
         critical_assets_df=critical_assets_df,
+        executive_records_df=executive_records_df,
+        threatfox_clustered_iocs=threatfox_clustered_iocs,
     )
 
-with analyst_tab:
+elif st.session_state["analytics_view"] == "Analyst Drill-Down":
     st.markdown("### 1. Analyst Context")
     st.write(
         "This view provides the technical evidence behind the leadership summary, including campaign correlation, phishing pattern analysis, and clustering outputs for CTI and SOC workflows."
@@ -1602,15 +1858,18 @@ with analyst_tab:
             `Phishing URL Pattern Clustering` groups finance-themed phishing URLs by lexical and URL-pattern features.
             """
         )
-        threatfox_tab, phishing_tab = st.tabs(
-            ["ThreatFox Malware Clustering", "Phishing URL Pattern Clustering"]
+        kmeans_mode = st.radio(
+            "K-Means workflow",
+            ["ThreatFox Malware Clustering", "Phishing URL Pattern Clustering"],
+            horizontal=True,
+            key="kmeans_mode_analytics",
         )
-        with threatfox_tab:
+        if kmeans_mode == "ThreatFox Malware Clustering":
             render_threatfox_kmeans_panel(
                 features_df=threatfox_clustered_iocs,
                 metrics_df=threatfox_kmeans_metrics,
             )
-        with phishing_tab:
+        else:
             render_phishing_kmeans_panel(
                 features_df=phishing_url_features,
                 metrics_df=text_mining_metrics,
@@ -1624,5 +1883,5 @@ with analyst_tab:
         threatfox_kmeans_metrics=threatfox_kmeans_metrics,
     )
 
-with justification_tab:
+else:
     render_approach_justification()
