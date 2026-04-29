@@ -8,7 +8,7 @@ st.divider()
 col1, col2, col3 = st.columns(3, gap="large")
 
 with col1:
-    st.markdown("### 🔗 Automatic Indicator Enrichment")
+    st.markdown("### Automatic Indicator Enrichment")
     st.markdown(
         """
         Automatically look up flagged URLs and IPs across multiple threat databases
@@ -19,25 +19,25 @@ with col1:
     st.info("**Builds on:** Existing PhishTank & ThreatFox API integrations")
 
 with col2:
-    st.markdown("### 📊 Transaction Data Integration")
+    st.markdown("### Transaction Data Integration")
     st.markdown(
         """
         Connect the platform to bank transaction feeds so threat indicators can be
-        matched against real account activity — helping catch fraud faster and earlier.
+        matched against real account activity, helping catch fraud faster and earlier.
         """
     )
     st.info("**Builds on:** Current fraud prevention use case and IOC monitoring")
 
 with col3:
-    st.markdown("### 👤 Personalized Alerts by Role")
+    st.markdown("### Personalized Alerts by Role")
     st.markdown(
         """
-        Automatically send the right information to the right person — detailed threat
-        data for analysts, high-level summaries for executives — so everyone gets what
+        Automatically send the right information to the right person (e.g. detailed threat
+        data for analysts, high-level summaries for executives, etc) so everyone gets what
         they need without digging through the full dashboard.
         """
     )
-    st.info("**Builds on:** Existing stakeholder views for Jordan, Alicia, and Rahul")
+    st.info("**Builds on:** Existing stakeholder views")
 
 st.divider()
 
