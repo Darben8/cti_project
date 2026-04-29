@@ -35,7 +35,7 @@ team_members = [
         "milestone_1": "Threat Intelligence Use Case Development",
         "milestone_2": "Data Source Identification and Justification",
         "milestone_3": "Clustering analysis of threatfox data and write-up",
-        "milestone_4": "",
+        "milestone_4": "Operational Intelligence and Dissemination",
         "signature": "Shani Nanje (04/22/2026)",
     },
     {
