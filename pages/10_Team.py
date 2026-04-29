@@ -47,7 +47,8 @@ team_members = [
         "milestone_1": "Intelligence buy in research",
         "milestone_2": "Data explorer page development",
         "milestone_3": "Validation and Error Analysis",
-        "signature": "Jiwon Chang (04/23/2026)",
+        "milestone_4": "Future CTI Platform Directions",
+        "signature": "Jiwon Chang (04/28/2026)",
     },
     {
         "name": "Supradipta Panta",
