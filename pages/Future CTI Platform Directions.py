@@ -6,7 +6,7 @@ st.markdown("Three realistic next steps to make this platform more powerful and 
 st.divider()
 
 with st.container():
-    st.markdown("### Automatic Indicator Enrichment")
+    st.markdown("### 🔗 Automatic Indicator Enrichment")
     st.markdown(
         """
         Automatically look up flagged URLs and IPs across multiple threat databases
@@ -19,7 +19,7 @@ with st.container():
 st.divider()
 
 with st.container():
-    st.markdown("### Transaction Data Integration")
+    st.markdown("### 📊 Transaction Data Integration")
     st.markdown(
         """
         Connect the platform to bank transaction feeds so threat indicators can be
@@ -31,7 +31,7 @@ with st.container():
 st.divider()
 
 with st.container():
-    st.markdown("### Personalized Alerts by Role")
+    st.markdown("### 👤 Personalized Alerts by Role")
     st.markdown(
         """
         Automatically send the right information to the right person (detailed threat
