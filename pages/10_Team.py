@@ -65,4 +65,5 @@ for member in team_members:
         st.write(f"Milestone 1 Role: {member['milestone_1']}")
         st.write(f"Milestone 2 Role: {member['milestone_2']}")
         st.write(f"Milestone 3 Role: {member['milestone_3']}")
+        st.write(f"Milestone 4 Role: {member['milestone_4']}")
         st.write(f"Signature: {member['signature']}")

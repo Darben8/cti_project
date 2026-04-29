@@ -5,9 +5,7 @@ st.markdown("Three realistic next steps to make this platform more powerful and 
 
 st.divider()
 
-col1, col2, col3 = st.columns(3, gap="large")
-
-with col1:
+with st.container():
     st.markdown("### Automatic Indicator Enrichment")
     st.markdown(
         """
@@ -18,7 +16,9 @@ with col1:
     )
     st.info("**Builds on:** Existing PhishTank & ThreatFox API integrations")
 
-with col2:
+st.divider()
+
+with st.container():
     st.markdown("### Transaction Data Integration")
     st.markdown(
         """
@@ -28,11 +28,13 @@ with col2:
     )
     st.info("**Builds on:** Current fraud prevention use case and IOC monitoring")
 
-with col3:
+st.divider()
+
+with st.container():
     st.markdown("### Personalized Alerts by Role")
     st.markdown(
         """
-        Automatically send the right information to the right person (e.g. detailed threat
+        Automatically send the right information to the right person (detailed threat
         data for analysts, high-level summaries for executives, etc) so everyone gets what
         they need without digging through the full dashboard.
         """
