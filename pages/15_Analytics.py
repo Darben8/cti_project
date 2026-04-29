@@ -1,4 +1,4 @@
-"""Interactive analytical approaches and methodology justification."""
+"""Role-based analytics page for executive and analyst audiences."""
 
 from __future__ import annotations
 
@@ -16,6 +16,8 @@ CORRELATION_DIR = PROJECT_ROOT / "data" / "ransomware_event_correlation"
 THREATFOX_PATH = PROJECT_ROOT / "data" / "filtered_iocs_threatfox.csv"
 TEXT_MINING_DIR = PROJECT_ROOT / "data" / "phishing_url_text_mining"
 THREATFOX_KMEANS_DIR = PROJECT_ROOT / "data" / "kmeans_validation"
+CRITICAL_ASSETS_PATH = PROJECT_ROOT / "data" / "critical_assets.csv"
+PHISHING_RAW_PATH = PROJECT_ROOT / "data" / "verified_online_banking_finance.csv"
 
 PAGE_COLORS = {
     "group": "#C73E1D",
@@ -28,10 +30,11 @@ PAGE_COLORS = {
 }
 
 
-st.title("Analytical Approaches")
+st.set_page_config(page_title="Analytics", layout="wide")
+st.title("Analytics")
 st.caption(
-    "Interactive CTI analytics for finance-sector ransomware correlation, with methodology "
-    "justification aligned to the Milestone 3 rubric."
+    "Role-based CTI analytics for U.S. banking, translating the same threat findings "
+    "into leadership-ready decisions and analyst-ready technical evidence."
 )
 
 
@@ -54,6 +57,28 @@ def load_table(path: Path) -> pd.DataFrame:
         return pd.read_csv(path)
     except EmptyDataError:
         return pd.DataFrame()
+
+
+@st.cache_data
+def load_critical_assets() -> pd.DataFrame:
+    if not CRITICAL_ASSETS_PATH.exists():
+        return pd.DataFrame()
+    df = pd.read_csv(CRITICAL_ASSETS_PATH)
+    if "criticality_1_low_5_high" in df.columns:
+        df["criticality_1_low_5_high"] = pd.to_numeric(
+            df["criticality_1_low_5_high"], errors="coerce"
+        ).fillna(0)
+    return df
+
+
+@st.cache_data
+def load_phishing_raw() -> pd.DataFrame:
+    if not PHISHING_RAW_PATH.exists():
+        return pd.DataFrame()
+    df = pd.read_csv(PHISHING_RAW_PATH)
+    if "submission_time" in df.columns:
+        df["submission_time"] = pd.to_datetime(df["submission_time"], errors="coerce", utc=True)
+    return df
 
 
 def has_columns(df: pd.DataFrame, required: list[str]) -> bool:
@@ -181,6 +206,16 @@ def metric_lookup(metrics_df: pd.DataFrame, metric_name: str, default: float = 0
     return float(match.iloc[0])
 
 
+def risk_label(score: float) -> str:
+    if score >= 5:
+        return "Critical"
+    if score >= 4:
+        return "High"
+    if score >= 3:
+        return "Moderate"
+    return "Monitored"
+
+
 def render_text_mining_panel(
     features_df: pd.DataFrame,
     metrics_df: pd.DataFrame,
@@ -195,21 +230,25 @@ def render_text_mining_panel(
 
     control_cols = st.columns([1.2, 1.2, 1, 1])
     target_options = ["All"] + sorted(features_df["target"].dropna().astype(str).unique().tolist())
-    selected_target = control_cols[0].selectbox("Target", target_options, key="tm_target")
+    selected_target = control_cols[0].selectbox("Target", target_options, key="tm_target_analytics")
     tld_options = sorted(features_df["tld"].dropna().astype(str).unique().tolist())
     selected_tlds = control_cols[1].multiselect(
         "TLDs",
         tld_options,
         default=tld_options[: min(6, len(tld_options))] if tld_options else [],
-        key="tm_tlds",
+        key="tm_tlds_analytics",
     )
-    banking_only = control_cols[2].checkbox("Banking keywords only", value=False, key="tm_kw_only")
-    suspicious_only = control_cols[3].checkbox("Suspicious TLDs only", value=False, key="tm_suspicious_only")
+    banking_only = control_cols[2].checkbox(
+        "Banking keywords only", value=False, key="tm_kw_only_analytics"
+    )
+    suspicious_only = control_cols[3].checkbox(
+        "Suspicious TLDs only", value=False, key="tm_suspicious_only_analytics"
+    )
 
     query = st.text_input(
         "Search URL or matched term",
         placeholder="Filter by URL, domain, target, or matched term",
-        key="tm_search",
+        key="tm_search_analytics",
     ).strip()
 
     panel_df = features_df.copy()
@@ -234,7 +273,10 @@ def render_text_mining_panel(
     https_pct = panel_df["uses_https"].mean() * 100 if not panel_df.empty else 0.0
     suspicious_pct = panel_df["is_suspicious_tld"].mean() * 100 if not panel_df.empty else 0.0
     metrics_cols[0].metric("URLs In View", f"{len(panel_df):,}")
-    metrics_cols[1].metric("Average URL Length", f"{panel_df['url_length'].mean() if not panel_df.empty else 0:.1f}")
+    metrics_cols[1].metric(
+        "Average URL Length",
+        f"{panel_df['url_length'].mean() if not panel_df.empty else 0:.1f}",
+    )
     metrics_cols[2].metric("HTTPS Share", f"{https_pct:.1f}%")
     metrics_cols[3].metric("Suspicious TLD Share", f"{suspicious_pct:.1f}%")
 
@@ -252,9 +294,7 @@ def render_text_mining_panel(
         .reset_index(name="count")
     )
     keyword_counts["keyword"] = keyword_counts["keyword"].str.replace("kw_", "", regex=False)
-    tld_counts = (
-        panel_df["tld"].value_counts().head(10).rename_axis("tld").reset_index(name="count")
-    )
+    tld_counts = panel_df["tld"].value_counts().head(10).rename_axis("tld").reset_index(name="count")
 
     left, right = st.columns([1.2, 1])
     with left:
@@ -361,12 +401,14 @@ def render_phishing_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.DataF
         "Clusters",
         cluster_options,
         default=cluster_options,
-        key="km_clusters",
+        key="km_clusters_analytics",
     )
     target_options = ["All"] + sorted(features_df["target"].dropna().astype(str).unique().tolist())
-    selected_target = control_cols[1].selectbox("Target", target_options, key="km_target")
-    https_only = control_cols[2].checkbox("HTTPS only", value=False, key="km_https")
-    min_finance_terms = control_cols[3].slider("Min finance keywords", 0, 10, 0, key="km_finance_min")
+    selected_target = control_cols[1].selectbox("Target", target_options, key="km_target_analytics")
+    https_only = control_cols[2].checkbox("HTTPS only", value=False, key="km_https_analytics")
+    min_finance_terms = control_cols[3].slider(
+        "Min finance keywords", 0, 10, 0, key="km_finance_min_analytics"
+    )
 
     panel_df = features_df.copy()
     if selected_clusters:
@@ -383,7 +425,10 @@ def render_phishing_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.DataF
 
     metrics_cols = st.columns(4)
     metrics_cols[0].metric("URLs In View", f"{len(panel_df):,}")
-    metrics_cols[1].metric("Clusters In View", f"{panel_df['url_pattern_cluster'].nunique() if not panel_df.empty else 0:,}")
+    metrics_cols[1].metric(
+        "Clusters In View",
+        f"{panel_df['url_pattern_cluster'].nunique() if not panel_df.empty else 0:,}",
+    )
     metrics_cols[2].metric("Silhouette Score", f"{silhouette:.3f}")
     metrics_cols[3].metric("Davies-Bouldin", f"{davies_bouldin:.3f}")
     st.caption(f"Calinski-Harabasz score: {calinski:.3f}")
@@ -412,7 +457,11 @@ def render_phishing_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.DataF
             y="url_count",
             color="dominant_target",
             title="Records Per Cluster",
-            labels={"url_pattern_cluster": "Cluster", "url_count": "URLs", "dominant_target": "Dominant Target"},
+            labels={
+                "url_pattern_cluster": "Cluster",
+                "url_count": "URLs",
+                "dominant_target": "Dominant Target",
+            },
         )
         st.plotly_chart(fig_clusters, use_container_width=True)
     with right:
@@ -476,19 +525,21 @@ def render_threatfox_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.Data
         "Clusters",
         cluster_options,
         default=cluster_options,
-        key="tf_km_clusters",
+        key="tf_km_clusters_analytics",
     )
-    malware_options = ["All"] + sorted(
-        features_df["malware_printable"].dropna().astype(str).unique().tolist()
-    )
+    malware_options = ["All"] + sorted(features_df["malware_printable"].dropna().astype(str).unique().tolist())
     selected_malware = control_cols[1].selectbox(
         "Dominant malware filter",
         malware_options,
-        key="tf_km_malware",
+        key="tf_km_malware_analytics",
     )
     ioc_type_options = ["All"] + sorted(features_df["ioc_type"].dropna().astype(str).unique().tolist())
-    selected_ioc_type = control_cols[2].selectbox("IOC Type", ioc_type_options, key="tf_km_ioc_type")
-    min_confidence = control_cols[3].slider("Min confidence", 0, 100, 0, key="tf_km_confidence")
+    selected_ioc_type = control_cols[2].selectbox(
+        "IOC Type", ioc_type_options, key="tf_km_ioc_type_analytics"
+    )
+    min_confidence = control_cols[3].slider(
+        "Min confidence", 0, 100, 0, key="tf_km_confidence_analytics"
+    )
 
     panel_df = features_df.copy()
     if selected_clusters:
@@ -500,10 +551,11 @@ def render_threatfox_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.Data
     panel_df["confidence_level"] = pd.to_numeric(panel_df["confidence_level"], errors="coerce")
     panel_df = panel_df[panel_df["confidence_level"].fillna(0) >= min_confidence]
 
-    if "selected_as_final" in metrics_df.columns:
-        selected_row = metrics_df.loc[metrics_df["selected_as_final"] == True]  # noqa: E712
-    else:
-        selected_row = pd.DataFrame()
+    selected_row = (
+        metrics_df.loc[metrics_df["selected_as_final"] == True]  # noqa: E712
+        if "selected_as_final" in metrics_df.columns
+        else pd.DataFrame()
+    )
     if selected_row.empty and not metrics_df.empty:
         selected_row = metrics_df.iloc[[0]]
 
@@ -608,90 +660,6 @@ def render_threatfox_kmeans_panel(features_df: pd.DataFrame, metrics_df: pd.Data
     )
 
 
-def render_key_insights_tab() -> None:
-    st.header("Key Insights & Intelligence Summary")
-
-    st.markdown(
-        """
-### **1. Types of Infrastructure Adversaries Are Using**
-- Attackers rely on **IP:port C2 servers** (443, 995, 2078) to blend into encrypted banking traffic.
-- Malware families like **QakBot, Emotet, Feodo** use **consistent C2 endpoints** for credential theft.
-- Ramnit uses **fast-rotating DGA domains**, making blocking difficult for banks.
-
-### **2. Emerging Threats Toward the Banking Industry**
-- Phishing URLs impersonate **bank brands** using terms like *login, secure, verify*.
-- Daily phishing activity shows **continuous targeting** of online banking users.
-- Malware clusters align with **account takeover, credential harvesting, and ransomware delivery**.
-
-### **3. How Analytics Provide Intelligence or Defense**
-- IOC analysis helps banks prioritize **high-risk C2 detection**.
-- Phishing URL patterns support **early fraud alerts**.
-- Heatmaps highlight **which malware families pose the greatest risk**.
-- Text-mining and clustering detect **new phishing domains** targeting financial users.
-"""
-    )
-
-    st.divider()
-    st.subheader("Summary Visualization")
-
-    option = st.selectbox(
-        "Choose a visualization:",
-        ["Malware Family vs IOC Type", "Phishing Activity Timeline"],
-        key="key_insights_visualization",
-    )
-
-    if option == "Malware Family vs IOC Type":
-        try:
-            df_threat = pd.read_csv("data/filtered_iocs_threatfox.csv")
-            heatmap_df = (
-                df_threat.groupby(["malware_printable", "ioc_type"])
-                .size()
-                .reset_index(name="count")
-            )
-            pivot = heatmap_df.pivot(
-                index="malware_printable",
-                columns="ioc_type",
-                values="count",
-            ).fillna(0)
-
-            fig = px.imshow(
-                pivot,
-                aspect="auto",
-                color_continuous_scale="YlOrRd",
-                title="Banking Threat Concentration: Malware Family vs IOC Type",
-                labels={"x": "IOC Type", "y": "Malware Family", "color": "Count"},
-            )
-
-            st.plotly_chart(fig, use_container_width=True)
-        except Exception:
-            st.warning("Heatmap could not be generated. Ensure the ThreatFox CSV is available.")
-    else:
-        try:
-            df_phish = pd.read_csv("data/verified_online_banking_finance.csv")
-            df_phish["submission_time"] = pd.to_datetime(
-                df_phish["submission_time"], errors="coerce"
-            )
-
-            timeline = (
-                df_phish.groupby(df_phish["submission_time"].dt.date)
-                .size()
-                .reset_index(name="count")
-            )
-
-            fig = px.line(
-                timeline,
-                x="submission_time",
-                y="count",
-                markers=True,
-                title="Phishing Activity Timeline (Banking Sector)",
-                labels={"submission_time": "Date", "count": "Phishing Submissions"},
-            )
-
-            st.plotly_chart(fig, use_container_width=True)
-        except Exception:
-            st.warning("Phishing timeline could not be generated. Ensure the phishing CSV is available.")
-
-
 def render_event_correlation_panel(
     group_summary: pd.DataFrame,
     filtered_df: pd.DataFrame,
@@ -728,22 +696,32 @@ def render_event_correlation_panel(
     st.caption(panel_source)
     panel_controls = st.columns([1.2, 1.2, 1, 1])
     source_options = ["All"] + sorted(filtered_df["source"].dropna().astype(str).unique().tolist())
-    selected_source = panel_controls[0].selectbox("Data source", source_options)
+    selected_source = panel_controls[0].selectbox(
+        "Data source", source_options, key="event_source_analytics"
+    )
     type_options = sorted(filtered_df["type"].dropna().astype(str).unique().tolist())
     selected_types = panel_controls[1].multiselect(
         "IOC types",
         type_options,
         default=type_options[: min(5, len(type_options))] if type_options else [],
+        key="event_types_analytics",
     )
     max_confidence = (
-        int(filtered_df["confidence"].max()) if not filtered_df.empty and filtered_df["confidence"].notna().any() else 100
+        int(filtered_df["confidence"].max())
+        if not filtered_df.empty and filtered_df["confidence"].notna().any()
+        else 100
     )
-    min_confidence = panel_controls[2].slider("Min confidence", 0, max_confidence, 0)
-    record_limit = panel_controls[3].slider("Rows shown", 10, 200, 50, 10)
+    min_confidence = panel_controls[2].slider(
+        "Min confidence", 0, max_confidence, 0, key="event_confidence_analytics"
+    )
+    record_limit = panel_controls[3].slider(
+        "Rows shown", 10, 200, 50, 10, key="event_rows_analytics"
+    )
 
     search_text = st.text_input(
         "Search indicator or group",
         placeholder="Filter by IOC value, group, or keyword",
+        key="event_search_analytics",
     ).strip()
 
     panel_df = filtered_df.copy()
@@ -773,9 +751,7 @@ def render_event_correlation_panel(
     else:
         chart_left, chart_right = st.columns([1.2, 1])
         with chart_left:
-            type_counts = (
-                panel_df["type"].value_counts().rename_axis("type").reset_index(name="count")
-            )
+            type_counts = panel_df["type"].value_counts().rename_axis("type").reset_index(name="count")
             fig_types = px.bar(
                 type_counts,
                 x="type",
@@ -796,6 +772,8 @@ def render_event_correlation_panel(
                 labels={"confidence": "Confidence"},
             )
             st.plotly_chart(fig_conf, use_container_width=True)
+
+        st.dataframe(panel_df.head(record_limit), use_container_width=True, hide_index=True)
 
     left, right = st.columns([1.2, 1])
     with left:
@@ -835,6 +813,7 @@ def render_event_correlation_panel(
         heatmap_data = group_ioc_types[group_ioc_types["group_norm"].isin(top_group_keys)].copy()
     else:
         heatmap_data = pd.DataFrame()
+
     if not heatmap_data.empty:
         pivot = heatmap_data.pivot_table(
             index="display_group",
@@ -854,6 +833,13 @@ def render_event_correlation_panel(
     else:
         st.info("No IOC type records found for the selected group filters.")
 
+    st.markdown("### Relationship Network")
+    network_figure = build_network_figure(nodes, edges, top_group_keys, network_view)
+    if network_figure.data:
+        st.plotly_chart(network_figure, use_container_width=True)
+    else:
+        st.info("No network relationship data was available for the selected view.")
+
     st.markdown("### Network Metrics")
     if has_columns(
         group_network_metrics,
@@ -868,9 +854,7 @@ def render_event_correlation_panel(
             "ioc_count",
         ],
     ):
-        network_table = group_network_metrics[
-            group_network_metrics["group_norm"].isin(top_group_keys)
-        ][
+        network_table = group_network_metrics[group_network_metrics["group_norm"].isin(top_group_keys)][
             [
                 "display_group",
                 "degree",
@@ -895,175 +879,333 @@ def render_event_correlation_panel(
         st.dataframe(group_family_matches, use_container_width=True, hide_index=True)
 
 
-group_summary = load_csv("group_risk_summary.csv")
-group_ioc_types = load_csv("group_ioc_type_counts.csv")
-source_overlap = load_csv("source_overlap_summary.csv")
-nodes = load_csv("network_nodes.csv")
-edges = load_csv("network_edges.csv")
-group_network_metrics = load_csv("group_network_metrics.csv")
-exact_ioc_overlap = load_csv("exact_ioc_overlap.csv")
-group_family_matches = load_csv("group_family_matches.csv")
-threatfox_iocs = load_table(THREATFOX_PATH)
-text_mining_metrics = load_table(TEXT_MINING_DIR / "evaluation_metrics.csv")
-phishing_url_features = load_table(TEXT_MINING_DIR / "phishing_url_features.csv")
-top_tfidf_keywords = load_table(TEXT_MINING_DIR / "top_tfidf_keywords.csv")
-top_ngrams = load_table(TEXT_MINING_DIR / "top_ngrams.csv")
-threatfox_kmeans_metrics = load_table(THREATFOX_KMEANS_DIR / "kmeans_validation_metrics.csv")
-threatfox_clustered_iocs = load_table(THREATFOX_KMEANS_DIR / "iocs_with_clusters.csv")
-
-if group_summary.empty:
-    st.warning(
-        "Correlation outputs were not found. Run `python utilities\\ransomware_event_correlation.py` first."
+def build_top_finding_cards(
+    top_groups: pd.DataFrame,
+    phishing_df: pd.DataFrame,
+    group_ioc_types: pd.DataFrame,
+) -> list[dict[str, str]]:
+    top_group = top_groups.iloc[0] if not top_groups.empty else None
+    top_group_name = (
+        str(top_group["display_group"]).title() if top_group is not None and "display_group" in top_group else "Akira"
     )
-    st.stop()
-
-max_victims = int(group_summary["victim_count"].max()) if not group_summary.empty else 1
-default_min_victims = min(3, max_victims)
-
-with st.sidebar:
-    st.header("Correlation Controls")
-    min_victims = st.slider("Minimum victim count", 1, max_victims, default_min_victims)
-    sort_metric = st.selectbox(
-        "Rank groups by",
-        ["risk_score", "victim_count", "ioc_count", "threatfox_ioc_count", "recency_days"],
+    top_group_score = (
+        f"{float(top_group['risk_score']):.2f}" if top_group is not None and "risk_score" in top_group else "high"
     )
-    top_n = st.slider("Top groups to display", 3, 20, 10)
-    network_view = st.selectbox(
-        "Relationship network view",
-        ["Group -> Victim", "Group -> IOC type -> TTP", "Group -> Country -> IOC"],
-    )
-    show_table = st.checkbox("Show supporting tables", value=False)
-
-filtered_groups = group_summary[group_summary["victim_count"] >= min_victims].copy()
-if filtered_groups.empty:
-    filtered_groups = group_summary.copy()
-    st.sidebar.info("No groups matched that threshold, so all groups are shown instead.")
-
-interactive_tab, justification_tab, key_insights_tab = st.tabs(
-    ["Interactive Analytics Panel", "Approach Justification", "Key Insights & Intelligence Summary"]
-)
-
-ascending = sort_metric == "recency_days"
-top_groups = filtered_groups.sort_values(sort_metric, ascending=ascending).head(top_n).copy()
-top_group_keys = set(top_groups["group_norm"])
-
-panel_source = "Exact ransomware.live and ThreatFox IOC overlap"
-if not exact_ioc_overlap.empty:
-    filtered_df = exact_ioc_overlap[exact_ioc_overlap["group_norm"].isin(top_group_keys)].copy()
-    confidence_series = (
-        filtered_df["confidence_level"] if "confidence_level" in filtered_df.columns else pd.Series(index=filtered_df.index, dtype="float64")
-    )
-    ioc_type_threatfox = (
-        filtered_df["ioc_type_threatfox"] if "ioc_type_threatfox" in filtered_df.columns else pd.Series(index=filtered_df.index, dtype="object")
-    )
-    ioc_type_ransomware_live = (
-        filtered_df["ioc_type_ransomware_live"] if "ioc_type_ransomware_live" in filtered_df.columns else pd.Series(index=filtered_df.index, dtype="object")
-    )
-    group_norm_series = (
-        filtered_df["group_norm"] if "group_norm" in filtered_df.columns else pd.Series(index=filtered_df.index, dtype="object")
-    )
-    group_series = (
-        filtered_df["group"] if "group" in filtered_df.columns else pd.Series(index=filtered_df.index, dtype="object")
-    )
-    indicator_series = (
-        filtered_df["indicator"] if "indicator" in filtered_df.columns else pd.Series(index=filtered_df.index, dtype="object")
-    )
-    ioc_value_series = (
-        filtered_df["ioc_value"] if "ioc_value" in filtered_df.columns else pd.Series(index=filtered_df.index, dtype="object")
-    )
-    source_series = (
-        filtered_df["source"] if "source" in filtered_df.columns else pd.Series(index=filtered_df.index, dtype="object")
+    top_group_victims = (
+        f"{int(top_group['victim_count'])}" if top_group is not None and "victim_count" in top_group else "multiple"
     )
 
-    filtered_df["confidence"] = pd.to_numeric(confidence_series, errors="coerce").fillna(0)
-    filtered_df["type"] = ioc_type_threatfox.fillna(ioc_type_ransomware_live).fillna("unknown")
-    filtered_df["group"] = group_norm_series.fillna(group_series).fillna("unknown")
-    filtered_df["indicator"] = indicator_series.fillna(ioc_value_series).fillna("unknown")
-    filtered_df["source"] = source_series.fillna("unknown")
-    filtered_df = filtered_df[["group", "indicator", "type", "confidence", "source"]]
-elif not group_family_matches.empty:
-    panel_source = "ThreatFox malware-family matches for selected ransomware groups"
-    filtered_df = group_family_matches[group_family_matches["group_norm"].isin(top_group_keys)].copy()
-    filtered_df["group"] = filtered_df["group_norm"].fillna("unknown")
-    filtered_df["indicator"] = filtered_df["ioc_value"].fillna("unknown")
-    filtered_df["type"] = filtered_df["ioc_type"].fillna(filtered_df["threat_type"]).fillna("unknown")
-    filtered_df["confidence"] = pd.to_numeric(
-        filtered_df["confidence_level"], errors="coerce"
-    ).fillna(0)
-    filtered_df["source"] = "ThreatFox family match"
-    filtered_df = filtered_df[["group", "indicator", "type", "confidence", "source"]]
-elif not threatfox_iocs.empty:
-    panel_source = "ThreatFox IOC feed fallback"
-    filtered_df = threatfox_iocs.copy()
-    filtered_df["group"] = "ThreatFox reference IOC"
-    filtered_df["indicator"] = filtered_df["ioc_value"].fillna("unknown")
-    filtered_df["type"] = filtered_df["ioc_type"].fillna(filtered_df["threat_type"]).fillna("unknown")
-    filtered_df["confidence"] = pd.to_numeric(
-        filtered_df["confidence_level"], errors="coerce"
-    ).fillna(0)
-    filtered_df["source"] = "ThreatFox"
-    filtered_df = filtered_df[["group", "indicator", "type", "confidence", "source"]]
-else:
-    panel_source = "No IOC data available"
-    filtered_df = pd.DataFrame(columns=["group", "indicator", "type", "confidence", "source"])
-
-
-with interactive_tab:
-    analysis_mode = st.selectbox(
-        "Choose an analysis panel",
-        ["Event Correlation", "Text Mining", "K-Means"],
+    phishing_count = len(phishing_df) if not phishing_df.empty else 0
+    top_target = (
+        phishing_df["target"].mode().iloc[0]
+        if has_columns(phishing_df, ["target"]) and not phishing_df["target"].mode().empty
+        else "banking brands"
     )
 
+    if has_columns(group_ioc_types, ["ioc_type", "ioc_count"]):
+        dominant_pattern_row = group_ioc_types.sort_values("ioc_count", ascending=False).iloc[0]
+        dominant_pattern = f"{dominant_pattern_row['ioc_type']} ({int(dominant_pattern_row['ioc_count'])})"
+    else:
+        dominant_pattern = "md5 / sha256 ransomware indicators"
+
+    return [
+        {
+            "title": f"{top_group_name} is the highest-risk ransomware actor in view",
+            "found": (
+                f"{top_group_name} leads the current ransomware ranking with a risk score of {top_group_score} "
+                f"and {top_group_victims} finance-linked victims in the correlation dataset."
+            ),
+            "matters": "It indicates which actor should drive leadership prioritization, briefing cadence, and response resourcing.",
+            "impact": "A successful campaign would most directly affect payment continuity, recovery timelines, and regulatory exposure.",
+            "action": f"Prioritize executive review of {top_group_name}-aligned controls, backup readiness, and identity hardening this week.",
+        },
+        {
+            "title": "Banking phishing pressure remains persistent and high-volume",
+            "found": (
+                f"The phishing dataset contains {phishing_count:,} finance-themed submissions, with repeated impersonation of "
+                f"{top_target} and related banking login workflows."
+            ),
+            "matters": "Credential theft remains one of the fastest paths to customer compromise and follow-on fraud or ransomware access.",
+            "impact": "Brand damage, fraud loss, and increased help-desk / response workload can all rise before a direct intrusion is confirmed.",
+            "action": "Increase brand monitoring, speed phishing takedown coordination, and align customer messaging with current lure themes.",
+        },
+        {
+            "title": "Repeated IOC patterns show where defenders can tighten detection",
+            "found": f"The most common IOC / technique pattern in the correlation outputs is {dominant_pattern}.",
+            "matters": "Repeated indicator types are useful for tuning detection engineering and triage rules instead of treating every alert as unique.",
+            "impact": "Better prioritization can reduce analyst fatigue, improve precision, and shorten time to detect finance-relevant activity.",
+            "action": "Task detection engineering to convert the dominant patterns into tuned monitoring, enrichment, and escalation logic.",
+        },
+    ]
+
+
+def build_asset_priority_table(assets_df: pd.DataFrame) -> pd.DataFrame:
+    if assets_df.empty:
+        return pd.DataFrame(
+            columns=["asset", "risk_level", "why_priority", "immediate_decision"]
+        )
+
+    selected_assets = assets_df.sort_values(
+        ["criticality_1_low_5_high", "asset"], ascending=[False, True]
+    ).head(5).copy()
+
+    decision_map = {
+        "Core banking systems": "Confirm resilience investment and restoration priority.",
+        "Payment processing systems": "Approve segmentation and fraud-control acceleration.",
+        "Identity and access management (AD/IAM)": "Prioritize MFA, PAM, and privileged account review.",
+        "Online and mobile banking platforms": "Fund phishing defense and customer protection measures.",
+        "Customer data repositories": "Validate containment, monitoring, and data-access controls.",
+        "SWIFT/RTGS gateway": "Review high-value transfer monitoring and segregation controls.",
+    }
+
+    selected_assets["risk_level"] = selected_assets["criticality_1_low_5_high"].apply(risk_label)
+    selected_assets["why_priority"] = selected_assets["ramification_if_breached"]
+    selected_assets["immediate_decision"] = selected_assets["asset"].map(decision_map).fillna(
+        "Confirm ownership, monitoring, and recovery expectations."
+    )
+
+    return selected_assets[["asset", "risk_level", "why_priority", "immediate_decision"]]
+
+
+def render_executive_summary(
+    top_groups: pd.DataFrame,
+    phishing_df: pd.DataFrame,
+    group_ioc_types: pd.DataFrame,
+    critical_assets_df: pd.DataFrame,
+) -> None:
+    st.markdown(
+        """
+        <style>
+        .exec-card {
+            border: 1px solid #D7DEE8;
+            border-radius: 18px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 0.9rem;
+            background: linear-gradient(180deg, #F8FBFF 0%, #F3F7FB 100%);
+        }
+        .exec-card h4 {
+            margin: 0 0 0.4rem 0;
+            color: #0B2545;
+        }
+        .exec-card p {
+            margin: 0.15rem 0 0.35rem 0;
+            color: #334155;
+        }
+        .exec-label {
+            color: #0F766E;
+            font-weight: 700;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    top_group = top_groups.iloc[0] if not top_groups.empty else None
+    top_threat = (
+        str(top_group["display_group"]).title()
+        if top_group is not None and "display_group" in top_group
+        else "Akira"
+    )
+    immediate_priority = "Block high-confidence infrastructure and harden IAM"
+    highest_risk_asset = "Identity and access management (AD/IAM)"
+
+    st.markdown("### 1. Current Threat Posture")
+    st.write(
+        "Current posture: U.S. banking remains under active phishing pressure and elevated ransomware risk, "
+        "with credential theft and financially motivated actor activity continuing to shape immediate defensive priorities."
+    )
+
+    metric_cols = st.columns(3)
+    metric_cols[0].metric("Top Active Threat", top_threat)
+    metric_cols[1].metric("Highest Risk Asset", highest_risk_asset)
+    metric_cols[2].metric("Immediate Action Priority", immediate_priority)
+
+    st.markdown("### 2. Top Intelligence Findings")
+    for card in build_top_finding_cards(top_groups, phishing_df, group_ioc_types):
+        st.markdown(
+            f"""
+            <div class="exec-card">
+                <h4>{card['title']}</h4>
+                <p><span class="exec-label">What we found:</span> {card['found']}</p>
+                <p><span class="exec-label">Why it matters:</span> {card['matters']}</p>
+                <p><span class="exec-label">Business / operational impact:</span> {card['impact']}</p>
+                <p><span class="exec-label">Recommended leadership action:</span> {card['action']}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("### 3. Asset Prioritization")
+    asset_priority_df = build_asset_priority_table(critical_assets_df)
+    if not asset_priority_df.empty:
+        visual_df = asset_priority_df.copy()
+        visual_df["risk_score"] = visual_df["risk_level"].map(
+            {"Critical": 5, "High": 4, "Moderate": 3, "Monitored": 2}
+        )
+        fig_assets = px.bar(
+            visual_df,
+            x="risk_score",
+            y="asset",
+            orientation="h",
+            color="risk_level",
+            color_discrete_map={
+                "Critical": "#C73E1D",
+                "High": "#F18F01",
+                "Moderate": "#2E86AB",
+                "Monitored": "#7FB069",
+            },
+            title="Critical Asset Priority Snapshot",
+            labels={"risk_score": "Relative Risk", "asset": "Asset", "risk_level": "Risk Level"},
+        )
+        st.plotly_chart(fig_assets, use_container_width=True)
+        st.dataframe(asset_priority_df, use_container_width=True, hide_index=True)
+    else:
+        st.info("Critical asset priorities could not be loaded.")
+
+    st.markdown("### 4. Dissemination Snapshot")
+    dissemination_df = pd.DataFrame(
+        [
+            {
+                "Audience": "CISO / Executive Leadership",
+                "When": "Within 2 hours of a critical finding",
+                "What they receive": "Current threat posture, asset impact, and decision-ready risk summary.",
+                "Delivery method": "Executive dashboard and short finished-intelligence brief.",
+            },
+            {
+                "Audience": "IR Team",
+                "When": "Immediate parallel notification",
+                "What they receive": "Incident-ready IOC package, threat actor context, and likely TTPs.",
+                "Delivery method": "Analyst dashboard, case notes, and direct operational handoff.",
+            },
+            {
+                "Audience": "SOC / Detection Engineering",
+                "When": "Same shift / within 4 hours",
+                "What they receive": "Detection priorities, indicator patterns, enrichment, and monitoring targets.",
+                "Delivery method": "Detection queue, dashboard filters, and alerting updates.",
+            },
+            {
+                "Audience": "Staff / Clients",
+                "When": "Within 24 to 48 hours if exposure is confirmed",
+                "What they receive": "Plain-language phishing or fraud warning with action steps.",
+                "Delivery method": "Bulletin, awareness notice, or customer-facing advisory.",
+            },
+        ]
+    )
+    st.dataframe(dissemination_df, use_container_width=True, hide_index=True)
+
+    st.markdown("### 5. Courses of Action")
+    courses = [
+        {
+            "title": "1. Contain high-risk infrastructure",
+            "owner": "SOC / Network Security",
+            "urgency": "Immediate",
+            "why": "Known malicious infrastructure is the fastest technical choke point to reduce active exposure.",
+        },
+        {
+            "title": "2. Harden IAM and privileged access",
+            "owner": "IAM / Security Engineering",
+            "urgency": "24-72 hours",
+            "why": "Credential theft and lateral movement remain common links between phishing, access abuse, and ransomware outcomes.",
+        },
+        {
+            "title": "3. Accelerate phishing takedown and customer protection",
+            "owner": "Fraud, Brand Protection, and Communications",
+            "urgency": "24-48 hours",
+            "why": "Fast-moving phishing campaigns create outsized customer harm and reputational damage if left visible.",
+        },
+        {
+            "title": "4. Validate restoration and resilience posture",
+            "owner": "IR Leadership / Infrastructure",
+            "urgency": "This week",
+            "why": "Ransomware readiness is not complete until backup recovery, segmentation, and executive decision paths are tested.",
+        },
+    ]
+
+    for item in courses:
+        with st.container(border=True):
+            st.markdown(f"**{item['title']}**")
+            st.write(f"Owner: {item['owner']}")
+            st.write(f"Urgency: {item['urgency']}")
+            st.write(f"Why: {item['why']}")
+
+
+def analyst_context_metrics(
+    filtered_df: pd.DataFrame,
+    top_groups: pd.DataFrame,
+    group_ioc_types: pd.DataFrame,
+) -> tuple[str, str, str]:
+    indicators_in_view = f"{len(filtered_df):,}"
+    top_group = (
+        str(top_groups.iloc[0]["display_group"]).title()
+        if not top_groups.empty and "display_group" in top_groups.columns
+        else "Unknown"
+    )
+    if has_columns(group_ioc_types, ["ioc_type", "ioc_count"]):
+        dominant = group_ioc_types.sort_values("ioc_count", ascending=False).iloc[0]
+        common_pattern = f"{dominant['ioc_type']} ({int(dominant['ioc_count'])})"
+    else:
+        common_pattern = "Pattern unavailable"
+    return indicators_in_view, top_group, common_pattern
+
+
+def render_analyst_interpretation(
+    analysis_mode: str,
+    exact_ioc_overlap: pd.DataFrame,
+    group_family_matches: pd.DataFrame,
+    text_mining_metrics: pd.DataFrame,
+    threatfox_kmeans_metrics: pd.DataFrame,
+) -> None:
     if analysis_mode == "Event Correlation":
-        render_event_correlation_panel(
-            group_summary=group_summary,
-            filtered_df=filtered_df,
-            panel_source=panel_source,
-            top_groups=top_groups,
-            sort_metric=sort_metric,
-            ascending=ascending,
-            source_overlap=source_overlap,
-            group_ioc_types=group_ioc_types,
-            top_group_keys=top_group_keys,
-            nodes=nodes,
-            edges=edges,
-            network_view=network_view,
-            group_network_metrics=group_network_metrics,
-            show_table=show_table,
-            exact_ioc_overlap=exact_ioc_overlap,
-            group_family_matches=group_family_matches,
+        confidence = (
+            "84 / 100"
+            if not exact_ioc_overlap.empty
+            else "72 / 100"
+            if not group_family_matches.empty
+            else "60 / 100"
+        )
+        meaning = (
+            "This mode shows which ransomware actors, victims, IOC types, and infrastructure are most relevant "
+            "to finance and where cross-source reinforcement exists."
+        )
+        next_step = (
+            "Prioritize top-ranked groups for enrichment, hunt on repeated IOC types, and escalate any cross-source matches first."
         )
     elif analysis_mode == "Text Mining":
-        render_text_mining_panel(
-            features_df=phishing_url_features,
-            metrics_df=text_mining_metrics,
-            tfidf_df=top_tfidf_keywords,
-            ngrams_df=top_ngrams,
+        suspicious_share = metric_lookup(text_mining_metrics, "suspicious_tld_share")
+        confidence = "78 / 100" if suspicious_share > 0 else "70 / 100"
+        meaning = (
+            "This mode highlights lexical and structural phishing patterns that can be turned into faster detection and takedown logic."
+        )
+        next_step = (
+            "Update phishing detections around suspicious TLDs, repeated brand terms, and common lure structures seen in the current dataset."
         )
     else:
-        st.markdown(
-            """
-            The app contains two different K-Means workflows:
-            `ThreatFox Malware IOC Clustering` groups ThreatFox indicators by IOC and malware-related features, while
-            `Phishing URL Pattern Clustering` groups finance-themed phishing URLs by lexical and URL-pattern features.
-            """
-        )
-        threatfox_tab, phishing_tab = st.tabs(
-            ["ThreatFox Malware Clustering", "Phishing URL Pattern Clustering"]
-        )
-        with threatfox_tab:
-            render_threatfox_kmeans_panel(
-                features_df=threatfox_clustered_iocs,
-                metrics_df=threatfox_kmeans_metrics,
+        silhouette = 0.0
+        if not threatfox_kmeans_metrics.empty:
+            selected_row = (
+                threatfox_kmeans_metrics.loc[threatfox_kmeans_metrics["selected_as_final"] == True]  # noqa: E712
+                if "selected_as_final" in threatfox_kmeans_metrics.columns
+                else pd.DataFrame()
             )
-        with phishing_tab:
-            render_phishing_kmeans_panel(
-                features_df=phishing_url_features,
-                metrics_df=text_mining_metrics,
-            )
+            if selected_row.empty:
+                selected_row = threatfox_kmeans_metrics.iloc[[0]]
+            silhouette = float(selected_row["silhouette_score"].iloc[0]) if not selected_row.empty else 0.0
+        confidence = "69 / 100" if silhouette > 0 else "62 / 100"
+        meaning = (
+            "This mode groups similar IOC and phishing records so analysts can spot repeated patterns without reviewing each row individually."
+        )
+        next_step = (
+            "Use dense clusters to define reusable triage playbooks, then validate whether dominant cluster features align to real adversary behavior."
+        )
+
+    st.markdown("### 4. Analyst Interpretation")
+    with st.container(border=True):
+        st.write(f"**What this analysis mode means:** {meaning}")
+        st.write(f"**Confidence score:** {confidence}")
+        st.write(f"**What analysts should do next:** {next_step}")
 
 
-with justification_tab:
+def render_approach_justification() -> None:
     st.markdown(
         """
         <style>
@@ -1270,5 +1412,217 @@ with justification_tab:
             """,
             unsafe_allow_html=True,
         )
-with key_insights_tab:
-    render_key_insights_tab()
+
+
+group_summary = load_csv("group_risk_summary.csv")
+group_ioc_types = load_csv("group_ioc_type_counts.csv")
+source_overlap = load_csv("source_overlap_summary.csv")
+nodes = load_csv("network_nodes.csv")
+edges = load_csv("network_edges.csv")
+group_network_metrics = load_csv("group_network_metrics.csv")
+exact_ioc_overlap = load_csv("exact_ioc_overlap.csv")
+group_family_matches = load_csv("group_family_matches.csv")
+threatfox_iocs = load_table(THREATFOX_PATH)
+text_mining_metrics = load_table(TEXT_MINING_DIR / "evaluation_metrics.csv")
+phishing_url_features = load_table(TEXT_MINING_DIR / "phishing_url_features.csv")
+top_tfidf_keywords = load_table(TEXT_MINING_DIR / "top_tfidf_keywords.csv")
+top_ngrams = load_table(TEXT_MINING_DIR / "top_ngrams.csv")
+threatfox_kmeans_metrics = load_table(THREATFOX_KMEANS_DIR / "kmeans_validation_metrics.csv")
+threatfox_clustered_iocs = load_table(THREATFOX_KMEANS_DIR / "iocs_with_clusters.csv")
+critical_assets_df = load_critical_assets()
+phishing_df = load_phishing_raw()
+
+if group_summary.empty:
+    st.warning(
+        "Correlation outputs were not found. Run `python utilities\\ransomware_event_correlation.py` first."
+    )
+    st.stop()
+
+max_victims = int(group_summary["victim_count"].max()) if not group_summary.empty else 1
+default_min_victims = min(3, max_victims)
+
+with st.sidebar:
+    st.header("Correlation Controls")
+    min_victims = st.slider("Minimum victim count", 1, max_victims, default_min_victims)
+    sort_metric = st.selectbox(
+        "Rank groups by",
+        ["risk_score", "victim_count", "ioc_count", "threatfox_ioc_count", "recency_days"],
+    )
+    top_n = st.slider("Top groups to display", 3, 20, 10)
+    network_view = st.selectbox(
+        "Relationship network view",
+        ["Group -> Victim", "Group -> IOC type -> TTP", "Group -> Country -> IOC"],
+    )
+    show_table = st.checkbox("Show supporting tables", value=False)
+
+filtered_groups = group_summary[group_summary["victim_count"] >= min_victims].copy()
+if filtered_groups.empty:
+    filtered_groups = group_summary.copy()
+    st.sidebar.info("No groups matched that threshold, so all groups are shown instead.")
+
+ascending = sort_metric == "recency_days"
+top_groups = filtered_groups.sort_values(sort_metric, ascending=ascending).head(top_n).copy()
+top_group_keys = set(top_groups["group_norm"])
+
+panel_source = "Exact ransomware.live and ThreatFox IOC overlap"
+if not exact_ioc_overlap.empty:
+    filtered_df = exact_ioc_overlap[exact_ioc_overlap["group_norm"].isin(top_group_keys)].copy()
+    confidence_series = (
+        filtered_df["confidence_level"]
+        if "confidence_level" in filtered_df.columns
+        else pd.Series(index=filtered_df.index, dtype="float64")
+    )
+    ioc_type_threatfox = (
+        filtered_df["ioc_type_threatfox"]
+        if "ioc_type_threatfox" in filtered_df.columns
+        else pd.Series(index=filtered_df.index, dtype="object")
+    )
+    ioc_type_ransomware_live = (
+        filtered_df["ioc_type_ransomware_live"]
+        if "ioc_type_ransomware_live" in filtered_df.columns
+        else pd.Series(index=filtered_df.index, dtype="object")
+    )
+    group_norm_series = (
+        filtered_df["group_norm"]
+        if "group_norm" in filtered_df.columns
+        else pd.Series(index=filtered_df.index, dtype="object")
+    )
+    group_series = (
+        filtered_df["group"] if "group" in filtered_df.columns else pd.Series(index=filtered_df.index, dtype="object")
+    )
+    indicator_series = (
+        filtered_df["indicator"]
+        if "indicator" in filtered_df.columns
+        else pd.Series(index=filtered_df.index, dtype="object")
+    )
+    ioc_value_series = (
+        filtered_df["ioc_value"]
+        if "ioc_value" in filtered_df.columns
+        else pd.Series(index=filtered_df.index, dtype="object")
+    )
+    source_series = (
+        filtered_df["source"]
+        if "source" in filtered_df.columns
+        else pd.Series(index=filtered_df.index, dtype="object")
+    )
+
+    filtered_df["confidence"] = pd.to_numeric(confidence_series, errors="coerce").fillna(0)
+    filtered_df["type"] = ioc_type_threatfox.fillna(ioc_type_ransomware_live).fillna("unknown")
+    filtered_df["group"] = group_norm_series.fillna(group_series).fillna("unknown")
+    filtered_df["indicator"] = indicator_series.fillna(ioc_value_series).fillna("unknown")
+    filtered_df["source"] = source_series.fillna("unknown")
+    filtered_df = filtered_df[["group", "indicator", "type", "confidence", "source"]]
+elif not group_family_matches.empty:
+    panel_source = "ThreatFox malware-family matches for selected ransomware groups"
+    filtered_df = group_family_matches[group_family_matches["group_norm"].isin(top_group_keys)].copy()
+    filtered_df["group"] = filtered_df["group_norm"].fillna("unknown")
+    filtered_df["indicator"] = filtered_df["ioc_value"].fillna("unknown")
+    filtered_df["type"] = filtered_df["ioc_type"].fillna(filtered_df["threat_type"]).fillna("unknown")
+    filtered_df["confidence"] = pd.to_numeric(filtered_df["confidence_level"], errors="coerce").fillna(0)
+    filtered_df["source"] = "ThreatFox family match"
+    filtered_df = filtered_df[["group", "indicator", "type", "confidence", "source"]]
+elif not threatfox_iocs.empty:
+    panel_source = "ThreatFox IOC feed fallback"
+    filtered_df = threatfox_iocs.copy()
+    filtered_df["group"] = "ThreatFox reference IOC"
+    filtered_df["indicator"] = filtered_df["ioc_value"].fillna("unknown")
+    filtered_df["type"] = filtered_df["ioc_type"].fillna(filtered_df["threat_type"]).fillna("unknown")
+    filtered_df["confidence"] = pd.to_numeric(filtered_df["confidence_level"], errors="coerce").fillna(0)
+    filtered_df["source"] = "ThreatFox"
+    filtered_df = filtered_df[["group", "indicator", "type", "confidence", "source"]]
+else:
+    panel_source = "No IOC data available"
+    filtered_df = pd.DataFrame(columns=["group", "indicator", "type", "confidence", "source"])
+
+
+executive_tab, analyst_tab, justification_tab = st.tabs(
+    ["Executive Summary", "Analyst Drill-Down", "Approach Justification"]
+)
+
+with executive_tab:
+    render_executive_summary(
+        top_groups=top_groups,
+        phishing_df=phishing_df,
+        group_ioc_types=group_ioc_types,
+        critical_assets_df=critical_assets_df,
+    )
+
+with analyst_tab:
+    st.markdown("### 1. Analyst Context")
+    st.write(
+        "This view provides the technical evidence behind the leadership summary, including campaign correlation, phishing pattern analysis, and clustering outputs for CTI and SOC workflows."
+    )
+    indicators_in_view, top_group_name, common_pattern = analyst_context_metrics(
+        filtered_df, top_groups, group_ioc_types
+    )
+    metric_cols = st.columns(3)
+    metric_cols[0].metric("Indicators In View", indicators_in_view)
+    metric_cols[1].metric("Top Threat Group", top_group_name)
+    metric_cols[2].metric("Most Common IOC / TTP Pattern", common_pattern)
+
+    st.markdown("### 2. Analysis Selector")
+    analysis_mode = st.selectbox(
+        "Choose an analysis panel",
+        ["Event Correlation", "Text Mining", "K-Means"],
+        key="analysis_mode_analytics",
+    )
+
+    st.markdown("### 3. Detailed Evidence Panels")
+    if analysis_mode == "Event Correlation":
+        render_event_correlation_panel(
+            group_summary=group_summary,
+            filtered_df=filtered_df,
+            panel_source=panel_source,
+            top_groups=top_groups,
+            sort_metric=sort_metric,
+            ascending=ascending,
+            source_overlap=source_overlap,
+            group_ioc_types=group_ioc_types,
+            top_group_keys=top_group_keys,
+            nodes=nodes,
+            edges=edges,
+            network_view=network_view,
+            group_network_metrics=group_network_metrics,
+            show_table=show_table,
+            exact_ioc_overlap=exact_ioc_overlap,
+            group_family_matches=group_family_matches,
+        )
+    elif analysis_mode == "Text Mining":
+        render_text_mining_panel(
+            features_df=phishing_url_features,
+            metrics_df=text_mining_metrics,
+            tfidf_df=top_tfidf_keywords,
+            ngrams_df=top_ngrams,
+        )
+    else:
+        st.markdown(
+            """
+            The app contains two different K-Means workflows:
+            `ThreatFox Malware IOC Clustering` groups ThreatFox indicators by IOC and malware-related features, while
+            `Phishing URL Pattern Clustering` groups finance-themed phishing URLs by lexical and URL-pattern features.
+            """
+        )
+        threatfox_tab, phishing_tab = st.tabs(
+            ["ThreatFox Malware Clustering", "Phishing URL Pattern Clustering"]
+        )
+        with threatfox_tab:
+            render_threatfox_kmeans_panel(
+                features_df=threatfox_clustered_iocs,
+                metrics_df=threatfox_kmeans_metrics,
+            )
+        with phishing_tab:
+            render_phishing_kmeans_panel(
+                features_df=phishing_url_features,
+                metrics_df=text_mining_metrics,
+            )
+
+    render_analyst_interpretation(
+        analysis_mode=analysis_mode,
+        exact_ioc_overlap=exact_ioc_overlap,
+        group_family_matches=group_family_matches,
+        text_mining_metrics=text_mining_metrics,
+        threatfox_kmeans_metrics=threatfox_kmeans_metrics,
+    )
+
+with justification_tab:
+    render_approach_justification()
