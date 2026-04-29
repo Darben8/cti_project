@@ -172,7 +172,7 @@ st.markdown(
     .nav-hint strong { color: #38bdf8; }
 
     /* ── Hide Streamlit chrome ── */
-    #MainMenu, footer, header { visibility: hidden; }
+    #MainMenu, footer { visibility: hidden; }
     </style>
     """,
     unsafe_allow_html=True,
