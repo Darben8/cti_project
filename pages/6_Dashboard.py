@@ -962,40 +962,6 @@ with cti_dashboard_tab:
     if top_categories.empty:
         st.info("No categories are available for the current filters.")
     else:
-<<<<<<< HEAD
-     col1, col2 = st.columns([1, 0.5])   # two equal columns
-
-with col1:   # chart takes HALF the page width
-    fig_types = px.bar_polar(
-        type_counts,
-        r="count",
-        theta="type",
-        color="count",
-        color_continuous_scale=["#ffd166", "#f18f01", "#c73e1d"],
-    )
-
-    fig_types.update_layout(
-        height=350,                     # SAME HEIGHT
-        autosize=False,                 # PREVENT AUTO EXPANSION
-        margin=dict(l=10, r=10, t=10, b=10),
-        paper_bgcolor="#fff7f5",
-
-        polar=dict(
-            bgcolor="#fff7f5",
-            radialaxis=dict(showticklabels=False, ticks="", linewidth=1),
-            angularaxis=dict(showticklabels=True, linewidth=1, color="#333"),
-        ),
-
-        showlegend=False,
-        coloraxis_showscale=False,
-
-        # FORCE WIDTH TO MATCH COLUMN
-        width=None
-    )
-
-    st.plotly_chart(fig_types, use_container_width=True)
-
-=======
         fig_categories = px.bar(
             top_categories,
             x="category",
@@ -1006,7 +972,6 @@ with col1:   # chart takes HALF the page width
         )
         fig_categories.update_layout(plot_bgcolor="#fffaf2", paper_bgcolor="#fffaf2", showlegend=False)
         st.plotly_chart(fig_categories, use_container_width=True)
->>>>>>> 946c31f206720178afdd96bd659bcce414f9f688
 
     # st.subheader("Sample Records")
     # sample_cols = ["source", "asset", "indicator", "type", "category", "date", "tags"]

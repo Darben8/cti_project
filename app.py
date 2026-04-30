@@ -12,7 +12,7 @@ st.set_page_config(
 pg = st.navigation(
     [
         st.Page("pages/0_Home.py",                                          title="Home",                           icon="🏠"),
-        st.Page("pages/1_Industry_Background.py",                           title="Industry Background",            icon="🏛️"),
+        st.Page("pages/1_Overview.py",                                      title="Industry Background",            icon="🏛️"),
         st.Page("pages/2_Threat_Trends.py",                                 title="Threat Trends",                  icon="📈"),
         st.Page("pages/3_Critical_Assets.py",                               title="Critical Assets",                icon="🔒"),
         st.Page("pages/4_Diamond_Models.py",                                title="Diamond Models",                 icon="♦️"),

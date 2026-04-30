@@ -274,6 +274,7 @@ with st.expander("📌 Milestone 4 — Operational Intelligence & Final Platform
         <div class="ms-item"><span class="ms-item-dot">○</span>STIX-like JSON export and IOC-to-control course-of-action mapping</div>
         <div class="ms-item"><span class="ms-item-dot">○</span>Future CTI Platform Directions: three justified development paths</div>
         <div class="ms-item"><span class="ms-item-dot">○</span>Polished UI, consistent dark theme, updated README with user guide</div>
+        <div class="ms-item"><span class="ms-item-check">○</span>Condensed the Dashboard page and added new tabs</div>
         """,
         unsafe_allow_html=True,
     )
