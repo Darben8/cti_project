@@ -851,25 +851,6 @@ with cti_dashboard_tab:
         color_continuous_scale=["#ffd166", "#f18f01", "#c73e1d"],
     )
 
-    fig_types.update_layout(
-        height=350,                     # SAME HEIGHT
-        autosize=False,                 # PREVENT AUTO EXPANSION
-        margin=dict(l=10, r=10, t=10, b=10),
-        paper_bgcolor="#fff7f5",
-
-        polar=dict(
-            bgcolor="#fff7f5",
-            radialaxis=dict(showticklabels=False, ticks="", linewidth=1),
-            angularaxis=dict(showticklabels=True, linewidth=1, color="#333"),
-        ),
-
-        showlegend=False,
-        coloraxis_showscale=False,
-
-        # FORCE WIDTH TO MATCH COLUMN
-        width=None
-    )
-
     st.plotly_chart(fig_types, use_container_width=True)
 
 
