@@ -1,163 +1,208 @@
 # CTI Project: U.S. Banking Threat Intelligence Platform
 
-This repository contains a multipage Streamlit application for cyber threat intelligence focused on the U.S. banking sector. The current project state reflects Milestone 3, which extends earlier dashboard and data-explorer work with analytical methods, validation content, and operational CTI framing.
+This repository contains the final Milestone 4 version of a multipage Streamlit cyber threat intelligence platform focused on the U.S. banking sector. The app combines phishing, malware, ransomware, infrastructure, and asset-prioritization data into one workflow that supports both analyst investigation and leadership-facing communication.
 
-## Current Scope
+## Final App Scope
 
-The app is designed primarily for tactical CTI and secondarily for operational CTI.
+The platform is designed primarily for tactical and operational CTI use in a banking context. It focuses on turning open-source threat data into usable security outputs for triage, dissemination, prioritization, and future platform planning.
 
-It combines:
+The current app supports:
 - Banking-focused phishing intelligence from PhishTank-derived datasets
-- ThreatFox local and live IOC records
-- ransomware.live victim data
-- Shodan exposure summaries
+- Malware and IOC enrichment from ThreatFox
+- Ransomware victim and group IOC context from ransomware.live-derived datasets
+- Shodan exposure summaries for internet-facing banking infrastructure
 - Critical asset alignment for banking-relevant systems
-- Analytical workflows for phishing URL text mining, ransomware event correlation, and K-means clustering
+- Interactive triage and export workflows
+- Role-based views for executive and analyst audiences
+- Actionable outputs in CSV, JSON, and STIX-like formats
+- Analytics workflows for phishing URL text mining, ransomware event correlation, and K-means clustering
 
 ## Milestone Coverage
 
 ### Milestone 1
-- Industry background and banking-sector scope
-- Threat trends and critical assets
-- Diamond Model content
-- Initial dashboard framing
+- Banking-sector scoping and U.S. geographic focus
+- Threat trends and adversary framing
+- Critical asset identification
+- Diamond Model content and sector context
 
 ### Milestone 2
-- Dynamic data explorer
-- Data source identification and justification
-- Collection strategy and source summary
-- Expanded dashboard views
-- API-backed and local CTI source integration
+- Streamlit dashboard expansion
+- Data source identification and collection framing
+- PhishTank and ThreatFox integration
+- Local data explorer and supporting CTI context
 
 ### Milestone 3
-- Interactive analytical approaches page
+- Analytical methods page
 - Phishing URL text mining outputs
 - Ransomware event correlation outputs
 - K-means clustering support
-- Preliminary visualizations and operational metrics
-- Validation, limitations, and CTI justification content
-- Tabbed layouts for:
-  - `Data Explorer` + `Ethics & Security`
-  - `Interactive Analytics` + `Approach Justification` + `Key Insights & Intelligence Summary`
+- Validation and limitations content
+- Expanded dashboard metrics and filtering
 
-## Main App Structure
+### Milestone 4
+- Visible milestone-change checklist on the Home page
+- Key intelligence findings with implications
+- Operational intelligence and dissemination guidance
+- Role-based views for executive and analyst audiences
+- Operational triage queue with filtering and export
+- Actionable outputs with course-of-action mapping
+- Future CTI platform direction content
 
+## App Structure
+
+The app is launched from `app.py`, which defines the navigation and global Streamlit page configuration.
+
+### Main entry point
 - `app.py`
-  - Landing page with the three milestone sections only
+  - Configures the app in wide layout and routes users to each page
 
-- `pages/1_Industry_Background.py`
-  - Sector background and framing for the U.S. banking focus
+### Pages currently used by the app
+- `pages/0_Home.py`
+  - Landing page with project overview and milestone-by-milestone checklist
 
-- `pages/2_Threat_Trends.py`
-  - Threat trend analysis and supporting CTI context
+- `pages/1_Overview.py`
+  - Banking-industry background, threat trends, intelligence buy-in, critical assets, and Diamond Model content
 
-- `pages/3_Critical_Assets.py`
-  - Banking critical assets and prioritization context
+- `pages/2_Dashboard.py`
+  - Main operational dashboard with source filtering, analyst metrics, asset alignment, Shodan summary, ethics/security notes, and a triage queue export workflow
 
-- `pages/4_Diamond_Models.py`
-  - Diamond Model analysis and visuals
+- `pages/3_Data_Sources.py`
+  - Source identification, source value, and collection summary content for PhishTank and ThreatFox
 
-- `pages/5_Intel_Buyin.py`
-  - Intelligence buy-in and stakeholder-facing value framing
+- `pages/4_Key_insights.py`
+  - Intelligence summary page highlighting key findings such as ransomware activity, phishing clustering, botnet behavior, and command-and-control infrastructure patterns
 
-- `pages/6_Dashboard.py`
-  - Main CTI dashboard with source filtering, summary metrics, threat charts, asset alignment, heatmap, and Shodan summary
+- `pages/5_Operational_Intelligence_and_Dissemination.py`
+  - Stakeholder-focused dissemination strategy, notification timing, reporting approach, asset prioritization, and diamond-model updates
 
-- `pages/7_Data_Explorer.py`
-  - Tabbed page for:
-    - `Dynamic Data Explorer`
-    - `Ethics & Security`
+- `pages/6_Analytics.py`
+  - Main analytical approaches page with executive summary, analyst drill-down, approach justification, and future CTI directions
 
-- `pages/8_Analytical_approaches.py`
-  - Tabbed page for:
-    - `Interactive Analytics Panel`
-    - `Approach Justification`
-    - `Key Insights & Intelligence Summary`
+- `pages/8_Actionable_Outputs.py`
+  - Export-focused page for course-of-action mapping and delivery of indicators in CSV, JSON, and STIX-like formats
 
-- `pages/8_Data_Source_Identification_Justification.py`
-  - Source identification, justification, and collection summary
+- `pages/9_Team.py`
+  - Team contributions and milestone-role summary
 
-- `pages/9_References.py`
-  - References and citations
+- `pages/10_References.py`
+  - Project references and supporting sources
 
-- `pages/10_Team.py`
-  - Team roles and milestone contributions
+## Data Files
 
-## Data Inputs
-
-Core local datasets include:
+### Core local datasets used by the app
 - `data/phishtank.csv`
-- `data/verified_online_banking_finance.csv`
-- `data/filtered_iocs_threatfox.csv`
-- `data/finance_victims.csv`
-- `data/finance_group_iocs.csv`
-- `data/critical_assets.csv`
-- `data/combined_iocs.csv`
+  - Local phishing IOC dataset used in the dashboard and supporting workflows
 
-Generated analytical outputs include:
+- `data/verified_online_banking_finance.csv`
+  - Banking/finance subset extracted from `verified_online.csv`
+
+- `data/filtered_iocs_threatfox.csv`
+  - ThreatFox-derived IOC dataset used across dashboard, analytics, and key insight workflows
+
+- `data/finance_group_iocs.csv`
+  - Ransomware-group IOC dataset used for operational and analytical CTI content
+
+- `data/finance_victims.csv`
+  - Ransomware victim dataset used for victim and industry targeting context
+
+- `data/critical_assets.csv`
+  - Banking-relevant critical asset alignment table
+
+- `data/all_iocs.csv`
+  - Combined strict IOC feed generated from multiple local sources
+
+### Supporting local data files
+- `data/combined_iocs.csv`
+  - Legacy or smaller merged IOC sample retained for comparison/export workflows
+
+- `data/processed_port_iocs.csv`
+  - Processed IOC subset used for the port/network visualization on the Key Insights page
+
+- `data/threat_events.csv`
+  - Threat-event summary data used for the MITRE technique frequency visualization
+
+- `data/verified_online.csv`
+  - Larger phishing source file used to derive the banking/finance subset
+
+- `data/verified_online.gz`
+  - Compressed copy of the verified online source data
+
+- `data/finance_failed_ioc_groups.csv`
+  - Support file from ransomware retrieval/group processing
+
+### Generated analytics output folders
 - `data/phishing_url_text_mining/`
-  - phishing URL features
-  - keyword summaries
-  - TF-IDF outputs
-  - n-gram outputs
-  - evaluation metrics
+  - URL features, keyword summaries, TF-IDF outputs, n-grams, TLD summaries, and evaluation metrics
 
 - `data/ransomware_event_correlation/`
-  - group risk summaries
-  - overlap summaries
-  - network nodes and edges
-  - group IOC-type counts
-  - network metrics
+  - Group-risk summaries, overlap summaries, family matches, network nodes/edges, and related metrics
 
-## Analytics Utilities
+- `data/kmeans_validation/`
+  - Cluster metrics, clustered IOC output, and K-means validation plots
 
+## Utilities and Supporting Scripts
+
+### Analytics and data-processing utilities
 - `utilities/phishing_url_text_mining.py`
-  - Extracts phishing URL features and produces text-mining outputs
+  - Builds phishing URL text-mining outputs from banking phishing data
 
 - `utilities/ransomware_event_correlation.py`
-  - Builds cross-source ransomware correlation outputs and network files
+  - Produces cross-source ransomware correlation outputs and network-analysis files
+
+- `utilities/kmeans2.py`
+  - Current K-means workflow used to generate saved validation outputs in `data/kmeans_validation/`
 
 - `utilities/kmeans.py`
-  - K-means clustering workflow over ThreatFox-derived inputs
+  - Earlier K-means workflow retained in the repository
 
 - `utilities/retrieve_ransomware_data.py`
-  - Retrieval/support script for ransomware-related data handling
+  - Support script for collecting and preparing ransomware-focused data
 
 - `utilities/extract_banking_verified_online.py`
-  - Banking-focused extraction support for verified online phishing data
+  - Extracts the banking/finance phishing subset from `verified_online.csv`
 
-## Other Supporting Files
+- `utilities/actionable_outputs.py`
+  - Shared helper module for course-of-action mapping, structured exports, STIX-like output, and intelligence report generation
+
+### Data-preparation helpers
+- `data/combine.py`
+  - Combines multiple source exports into `data/all_iocs.csv`
 
 - `data/data_collection.py`
-  - Local collection script for selected source exports
-
-- `Dockerfile`
-  - Container setup for running the Streamlit app
-
-- `requirements.txt`
-  - Python dependencies
-
-- `images/Diamond_model.png`
-- `images/Diamond_model2.png`
-  - Diamond Model visuals used in the app
-
-- `changes/`
-  - Development-time working copies and alternate versions retained during iteration
+  - Collection helper for selected source exports and API-backed summaries
 
 ## Data Sources
 
+The project uses or references the following external sources:
 - PhishTank
 - ThreatFox
 - ransomware.live
 - Shodan
+- MITRE ATT&CK
+- Industry background and banking-sector reference material listed on the References page
 
-Note:
-- `ThreatFox` and `Shodan` may require API keys through `.env`
-- Some app pages use local cached/exported data alongside live API requests
+## Environment Variables
 
-## Local Run
+Some app features rely on optional API-backed data retrieval. If you want those features available, create a `.env` file in the project root with:
+
+```env
+SHODAN_API_KEY=your_key_here
+THREATFOX_API_KEY=your_key_here
+```
+
+Notes:
+- The app can still run using the included local CSV files if you do not provide API keys.
+- API-backed collection scripts use `python-dotenv` to load the `.env` file.
+
+## How to Run
+
+### Requirements
+- Python 3.11 or newer recommended
+- `pip`
+- Internet access if you plan to use API-backed or external-source refresh features
 
 ### Windows PowerShell
+
 ```powershell
 python -m venv .venv
 .venv\Scripts\Activate.ps1
@@ -166,27 +211,74 @@ streamlit run app.py
 ```
 
 ### macOS / Linux
+
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-If needed, create a `.env` file for API-backed pages:
-- `SHODAN_API_KEY`
-- `THREATFOX_API_KEY`
+### Conda environment
 
-## Docker Run
+```bash
+conda create -n cti-platform python=3.11 -y
+conda activate cti-platform
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+### Docker
 
 ```bash
 docker build -t banking-cti-app .
 docker run --rm -p 8501:8501 --env-file .env banking-cti-app
 ```
 
+After launch, Streamlit will typically expose the app at:
+
+- `http://localhost:8501`
+
+## Recommended Run Order
+
+For most users, the easiest path is:
+1. Install dependencies
+2. Add optional API keys to `.env` if needed
+3. Run `streamlit run app.py`
+4. Open the Home page first for milestone coverage and project orientation
+5. Review Dashboard, Analytics, Operational Intelligence, and Actionable Outputs for the core Milestone 4 experience
+
+## User Guide
+
+### Best pages to start with
+- `Home`
+  - Quick overview of what changed by milestone
+
+- `Dashboard`
+  - Operational overview, source filters, triage queue, and exportable alert view
+
+- `Key Insights & Intelligence Summary`
+  - Fast summary of major findings from the data
+
+- `Operational Intelligence & Dissemination`
+  - Stakeholder communication, reporting, and course-of-action framing
+
+- `Analytical Approaches`
+  - Executive and analyst role-based exploration of the analytics
+
+- `Actionable Outputs`
+  - Export indicators and course-of-action recommendations in multiple formats
+
+### Key Milestone 4 features
+- Triage queue filtering by severity, asset, category, and status
+- CSV/JSON export support for operational views
+- Course-of-action mapping for indicators
+- STIX-like export generation
+- Executive-summary and analyst-drill-down communication paths
+
 ## Notes
 
-- The repository currently reflects Milestone 3 functionality and layout.
-- Several pages combine local datasets with live-source summaries.
-- The analytical justification content is presented in a higher-level CTI briefing style rather than a strict rubric table.
-- The project emphasizes defender-facing outputs such as prioritization, triage support, alert precision, and mean-time-to-detect improvement.
+- The repository now reflects the final Milestone 4 app state rather than the earlier milestone-only layout.
+- Most core demonstrations can be run from included local data files.
+- Some supporting scripts are intended for preprocessing or regeneration of saved outputs rather than daily app use.
+- The app is designed to stand alone as a final course deliverable with operational CTI framing, not just exploratory visuals.
