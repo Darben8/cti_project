@@ -466,14 +466,15 @@ def build_triage_queue(records: pd.DataFrame, assets: pd.DataFrame) -> pd.DataFr
     type_text = queue["type"].fillna("").astype(str).str.lower()
     tag_text = queue["tags"].fillna("").astype(str).str.lower()
 
-    queue["risk_score"] = 20
+    queue["risk_score"] = 15
     queue.loc[category_text.str.contains("ransomware|botnet|malware", regex=True), "risk_score"] += 30
-    queue.loc[category_text.str.contains("phishing|credential", regex=True), "risk_score"] += 24
+    queue.loc[category_text.str.contains("phishing|credential", regex=True), "risk_score"] += 18
     queue.loc[type_text.str.contains("url|domain|ip|sha|md5", regex=True), "risk_score"] += 12
-    queue.loc[tag_text.str.contains("bank|finance|emotet|qakbot|dridex|gozi|icedid", regex=True), "risk_score"] += 12
-    queue["risk_score"] += (queue["asset_criticality"] * 6).round().astype(int)
-    queue.loc[queue["age_days"] <= 7, "risk_score"] += 10
-    queue.loc[(queue["age_days"] > 7) & (queue["age_days"] <= 30), "risk_score"] += 5
+    queue.loc[tag_text.str.contains("bank|finance|emotet|qakbot|dridex|gozi|icedid", regex=True), "risk_score"] += 10
+    queue["risk_score"] += (queue["asset_criticality"] * 4).round().astype(int)
+    queue.loc[queue["age_days"] <= 7, "risk_score"] += 6
+    queue.loc[(queue["age_days"] > 7) & (queue["age_days"] <= 30), "risk_score"] += 3
+    queue.loc[(queue["age_days"] > 30), "risk_score"] += 0
     queue["risk_score"] = queue["risk_score"].clip(upper=100).astype(int)
 
     queue["severity"] = pd.cut(

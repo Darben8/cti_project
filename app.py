@@ -14,7 +14,7 @@ pg = st.navigation(
         st.Page("pages/0_Home.py",                                          title="Home",                           icon="🏠"),
         st.Page("pages/1_Overview.py",                                      title="Overview",                        icon="🏛️"),
         st.Page("pages/2_Dashboard.py",                                     title="Dashboard",                      icon="📊"),
-        st.Page("pages/8_Data_Sources.py",                                  title="Data Sources",                   icon="📂"),
+        st.Page("pages/3_Data_Sources.py",                                  title="Data Sources",                   icon="📂"),
         st.Page("pages/9_Analytical_approaches.py",                         title="Analytical Approaches",          icon="🧠"),
         st.Page("pages/10_References.py",                                   title="References",                     icon="📚"),
         st.Page("pages/11_Team.py",                                         title="Team",                           icon="👥"),
