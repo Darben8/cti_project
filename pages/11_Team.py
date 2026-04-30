@@ -19,7 +19,7 @@ team_members = [
         "milestone_1": "Alignment, streamlit app page navigation, threat intel buy-in page",
         "milestone_2": "Data Source Identification and Justification",
         "milestone_3": "Interactive anlytics panel development and write-up",
-        "milestone_4": "Operational Triage Dashboard",
+        "milestone_4": "Operational Triage Dashboard, merging of dashboard and data explorer",
         "signature": "Jemima Lumbala (04/29/2026)",
     },
     {
@@ -59,7 +59,7 @@ team_members = [
         "milestone_1": "Code review",
         "milestone_2": "Data Collection and Summary",
         "milestone_3": "Key Insights and Intelligence Summary",
-        "milestone_4": "Key insights and intelligence summary",
+        "milestone_4": "Key insights and intelligence summary, merging of threat trends, background, assets and diamond models into overview page",
         "signature": "Supradipta Panta (04/29/2026)",
     },
 ]
