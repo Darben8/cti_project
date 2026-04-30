@@ -843,15 +843,15 @@ with cti_dashboard_tab:
             st.info("No indicator types are available for the current filters.")
         else:
         
-    fig_types = px.bar_polar(
-        type_counts,
-        r="count",
-        theta="type",
-        color="count",
-        color_continuous_scale=["#ffd166", "#f18f01", "#c73e1d"],
-    )
-
-    st.plotly_chart(fig_types, use_container_width=True)
+    fig_types = px.pie(
+                type_counts,
+                names="type",
+                values="count",
+                color_discrete_sequence=TYPE_COLORS,
+                hole=0.45,
+            )
+            fig_types.update_layout(paper_bgcolor="#f6fbff")
+            st.plotly_chart(fig_types, use_container_width=True)
 
 
     with right_col:
