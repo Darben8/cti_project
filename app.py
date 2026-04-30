@@ -22,7 +22,6 @@ pg = st.navigation(
         st.Page("pages/8_Actionable_Outputs.py",   title="Actionable Outputs",              icon="🎯"),
         st.Page("pages/9_Team.py",                     title="Team",                        icon="👥"),
         st.Page("pages/10_References.py",              title="References",                  icon="📚"),
-    
     ]
 )
 
