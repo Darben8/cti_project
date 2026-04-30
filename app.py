@@ -22,7 +22,7 @@ pg = st.navigation(
         st.Page("pages/13_Key_insights_and_intelligence_summary.py",   title="Key Insights & Intelligence Summary", icon="🧩"),
         st.Page("pages/14_Operational_Intelligence_and_Dissemination.py",   title="Operational Intelligence & Dissemination", icon="🚨"),
         st.Page("pages/15_Analytics.py",   title="Role-based Analytics", icon="📊"),
-        st.Page("pages/16_Actionable_Outputs.py",   title="Actionable Outputs & COA", icon="📊")
+        st.Page("pages/16_Actionable_Outputs.py",   title="Actionable Outputs")
     ]
 )
 
