@@ -53,7 +53,7 @@ st.markdown(
     }
     .block-container {
         padding-top: 2rem;
-        max-width: 1180px;
+        max-width: 1600px;
     }
     h1, h2, h3, h4, h5 {
         color: #e6edf3;

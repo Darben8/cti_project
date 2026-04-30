@@ -33,7 +33,7 @@ st.markdown(
     /* ── Main content area ── */
     .block-container {
         padding-top: 2rem;
-        max-width: 1100px;
+        max-width: 1700px;
     }
 
     /* ── Hero banner ── */
