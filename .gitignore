@@ -1,4 +1,9 @@
 #ignore env files
 *.env
 *.venv
-
+pages/__pycache__
+utilities/__pycache__
+__pycache__/
+lib/
+*port_network.html
+*.pyc
