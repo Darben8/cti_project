@@ -20,7 +20,7 @@ from sklearn.metrics import (
 )
 
 # ── 1. Load Data ───────────────────────────────────────────────────────────────
-df = pd.read_csv('/mnt/user-data/uploads/filtered_iocs.csv')
+df = pd.read_csv('data/filtered_iocs_threatfox.csv')
 print(f"Dataset shape: {df.shape}")
 print(f"\nMalware distribution:\n{df['malware_printable'].value_counts()}")
 
