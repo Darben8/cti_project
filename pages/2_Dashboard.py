@@ -842,8 +842,7 @@ with cti_dashboard_tab:
         if type_counts.empty:
             st.info("No indicator types are available for the current filters.")
         else:
-        
-    fig_types = px.pie(
+        fig_types = px.pie(
                 type_counts,
                 names="type",
                 values="count",
@@ -851,7 +850,7 @@ with cti_dashboard_tab:
                 hole=0.45,
             )
             fig_types.update_layout(paper_bgcolor="#f6fbff")
-            st.plotly_chart(fig_types, use_container_width=True)
+        st.plotly_chart(fig_types, use_container_width=True)
 
 
     with right_col:
