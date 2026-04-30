@@ -2,8 +2,239 @@
 import pandas as pd
 import streamlit as st
 
-st.title("Operational Intelligence and Dissemination")
-st.caption("Operational intelligence strategies based on active threat analysis.")
+
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+
+    /* ── Root theme ── */
+    html, body, [data-testid="stAppViewContainer"] {
+        background-color: #080f1a;
+        color: #c9d1d9;
+        font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    /* ── Sidebar ── */
+    [data-testid="stSidebar"] {
+        background-color: #0d1526 !important;
+        border-right: 1px solid #1e3a5f;
+    }
+    [data-testid="stSidebar"] * {
+        color: #8ba3c0 !important;
+        font-family: 'IBM Plex Sans', sans-serif !important;
+    }
+    [data-testid="stSidebar"] [aria-selected="true"] {
+        background-color: #0f2644 !important;
+        color: #38bdf8 !important;
+        border-left: 3px solid #38bdf8;
+    }
+
+    /* ── Main content area ── */
+    .block-container {
+        padding-top: 2rem;
+        max-width: 1100px;
+    }
+
+    /* ── Hero banner ── */
+    .hero {
+        background: linear-gradient(135deg, #0f2644 0%, #080f1a 60%, #091a10 100%);
+        border: 1px solid #1e3a5f;
+        border-radius: 12px;
+        padding: 3rem 3.5rem 2.5rem;
+        margin-bottom: 2.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 260px; height: 260px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%);
+    }
+    .hero-eyebrow {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.2em;
+        color: #38bdf8;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+    }
+    .hero-title {
+        font-size: 2.4rem;
+        font-weight: 700;
+        color: #e6edf3;
+        line-height: 1.15;
+        margin: 0 0 0.6rem;
+    }
+    .hero-title span {
+        color: #38bdf8;
+    }
+    .hero-sub {
+        font-size: 1rem;
+        color: #8ba3c0;
+        font-weight: 300;
+        max-width: 600px;
+        line-height: 1.6;
+        margin-bottom: 1.8rem;
+    }
+    .hero-tags {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+    .tag {
+        background: rgba(56,189,248,0.08);
+        border: 1px solid rgba(56,189,248,0.25);
+        color: #38bdf8;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.7rem;
+        padding: 0.25rem 0.65rem;
+        border-radius: 4px;
+        letter-spacing: 0.05em;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.68rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #38bdf8;
+        margin: 2.2rem 0 1rem;
+        padding-left: 2px;
+    }
+
+    /* ── Milestone cards (reused for COA blocks) ── */
+    .ms-card {
+        background: #0d1526;
+        border: 1px solid #1e3a5f;
+        border-radius: 10px;
+        padding: 1.4rem 1.6rem;
+        margin-bottom: 1rem;
+        transition: border-color 0.2s;
+    }
+    .ms-card:hover { border-color: #2d5a8e; }
+    .ms-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.9rem;
+    }
+    .ms-badge {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        padding: 0.2rem 0.55rem;
+        border-radius: 3px;
+        text-transform: uppercase;
+    }
+    .ms-badge-critical {
+        background: rgba(239,68,68,0.12);
+        border: 1px solid rgba(239,68,68,0.35);
+        color: #f87171;
+    }
+    .ms-badge-high {
+        background: rgba(251,146,60,0.12);
+        border: 1px solid rgba(251,146,60,0.35);
+        color: #fb923c;
+    }
+    .ms-badge-medium {
+        background: rgba(250,204,21,0.12);
+        border: 1px solid rgba(250,204,21,0.35);
+        color: #facc15;
+    }
+    .ms-badge-active {
+        background: rgba(34,197,94,0.12);
+        border: 1px solid rgba(34,197,94,0.3);
+        color: #4ade80;
+    }
+    .ms-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e6edf3;
+    }
+    .ms-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        padding: 0.3rem 0;
+        font-size: 0.875rem;
+        color: #8ba3c0;
+        line-height: 1.5;
+    }
+    .ms-item-check { color: #4ade80; font-size: 0.85rem; flex-shrink: 0; margin-top: 2px; }
+    .ms-item-dot   { color: #2d5a8e; font-size: 0.85rem; flex-shrink: 0; margin-top: 2px; }
+
+    /* ── COA card ── */
+    .coa-card {
+        background: #0d1526;
+        border: 1px solid #1e3a5f;
+        border-left: 3px solid #38bdf8;
+        border-radius: 8px;
+        padding: 1.2rem 1.4rem;
+        margin-bottom: 1rem;
+    }
+    .coa-card-title {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #38bdf8;
+        margin-bottom: 0.6rem;
+    }
+    .coa-card-body {
+        font-size: 0.875rem;
+        color: #8ba3c0;
+        line-height: 1.6;
+    }
+    .coa-card-body strong { color: #e6edf3; }
+
+    /* ── Nav hint ── */
+    .nav-hint {
+        background: rgba(56,189,248,0.05);
+        border: 1px solid rgba(56,189,248,0.15);
+        border-radius: 8px;
+        padding: 0.9rem 1.2rem;
+        font-size: 0.82rem;
+        color: #8ba3c0;
+        margin-top: 2rem;
+    }
+    .nav-hint strong { color: #38bdf8; }
+
+    /* ── Hide Streamlit chrome ── */
+    #MainMenu, footer { visibility: hidden; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ── Hero ──────────────────────────────────────────────────────────────────────
+st.markdown(
+    """
+    <div class="hero">
+        <div class="hero-eyebrow">CTI Platform · Milestone 4</div>
+        <div class="hero-title">Operational Intelligence<br><span>&amp; Dissemination</span></div>
+        <div class="hero-sub">
+            Operational intelligence strategies based on active threat analysis
+        </div>
+        <div class="hero-tags">
+            <span class="tag">Akira Ransomware</span>
+            <span class="tag">QakBot C2</span>
+            <span class="tag">Phishing Cluster</span>
+            <span class="tag">Ramnit Botnet</span>
+            <span class="tag">MITRE ATT&amp;CK</span>
+            <span class="tag">Diamond Model</span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+st.markdown('<div class="section-label">// Active Threat Landscape</div>', unsafe_allow_html=True)
 
 with st.expander("Threat Summary", expanded=True):
     st.markdown("**Active threats identified across four datasets:**")
@@ -36,6 +267,9 @@ with st.expander("Threat Summary", expanded=True):
         ]
     )
     st.dataframe(summary_df, use_container_width=True, hide_index=True)
+
+
+st.markdown('<div class="section-label">// Dissemination</div>', unsafe_allow_html=True)
 
 with st.expander("1. Who to Notify"):
     st.markdown("**Stakeholder Notification:**")
@@ -75,8 +309,7 @@ with st.expander("1. Who to Notify"):
     )
     st.dataframe(stakeholder_df, use_container_width=True, hide_index=True)
 
-
-with st.expander("When and What to Communicate"):
+with st.expander("2. When and What to Communicate"):
     st.markdown("**Communication timeline by urgency:**")
     comms_df = pd.DataFrame(
         [
@@ -108,7 +341,7 @@ with st.expander("When and What to Communicate"):
     )
     st.dataframe(comms_df, use_container_width=True, hide_index=True)
 
-with st.expander("How to Deliver Intelligence"):
+with st.expander("3. How to Deliver Intelligence"):
     st.markdown("**Delivery method by audience and use case:**")
     delivery_df = pd.DataFrame(
         [
@@ -142,7 +375,9 @@ with st.expander("How to Deliver Intelligence"):
     st.dataframe(delivery_df, use_container_width=True, hide_index=True)
 
 
-with st.expander("Courses of Action and Implementation"):
+st.markdown('<div class="section-label">// Courses of Action </div>', unsafe_allow_html=True)
+
+with st.expander("Courses of Action"):
     coa_data = {
         "1 — Block Akira and QakBot C2 Infrastructure (Immediate)": (
             "Block all identified C2 IPs across perimeter firewall and endpoint policy. "
@@ -173,10 +408,23 @@ with st.expander("Courses of Action and Implementation"):
         ),
     }
     for coa_title, coa_detail in coa_data.items():
-        st.markdown(f"**{coa_title}**")
-        st.markdown(coa_detail)
-        st.divider()
+        # Split body and "Why" for styled rendering
+        parts = coa_detail.split("\n\n")
+        body = parts[0]
+        why = parts[1] if len(parts) > 1 else ""
+        why_html = why.replace("**Why:**", "<strong>Why:</strong>")
+        st.markdown(
+            f"""
+            <div class="coa-card">
+                <div class="coa-card-title">{coa_title}</div>
+                <div class="coa-card-body">{body}<br><br>{why_html}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
+
+st.markdown('<div class="section-label">// Next CTI Iteration</div>', unsafe_allow_html=True)
 
 with st.expander("How This Informs the Next CTI Iteration"):
     iter_df = pd.DataFrame(
@@ -205,6 +453,8 @@ with st.expander("How This Informs the Next CTI Iteration"):
     )
     st.dataframe(iter_df, use_container_width=True, hide_index=True)
 
+
+st.markdown('<div class="section-label">// Asset Prioritization &amp; Diamond Model</div>', unsafe_allow_html=True)
 
 with st.expander("Critical Asset Prioritization and Diamond Model Updates"):
     st.markdown("**Asset prioritization by threat exposure:**")
@@ -238,7 +488,7 @@ with st.expander("Critical Asset Prioritization and Diamond Model Updates"):
     diamond_data = {
         "Akira Ransomware Group": {
             "Adversary": "Sophisticated ransomware-as-a-service affiliate. Financial sector targeting confirmed.",
-            "Capability": "ateral movement, exfiltration and encryption. New builds actively deployed.",
+            "Capability": "Lateral movement, exfiltration and encryption. New builds actively deployed.",
             "Infrastructure": "Bitcoin ransom wallets documented. C2 channels likely QakBot-delivered.",
             "Victim": "Financial organizations, weak credentials, and inadequate backup posture.",
         },
