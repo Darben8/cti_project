@@ -12,6 +12,7 @@ import requests
 import streamlit as st
 from dotenv import load_dotenv
 import altair as alt 
+import json
 
 st.set_page_config(layout="wide")
 
@@ -589,3 +590,68 @@ est_time = datetime.now(timezone(timedelta(hours=-6))).strftime('%Y-%m-%d %H:%M:
 st.info(f"Last dashboard refresh: {est_time} EST")
 
 #st.caption(f"Last dashboard refresh: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC")
+
+
+# 1. COA Mapping Logic
+def get_course_of_action(row):
+    """Maps threat categories and indicator types to defensive strategies."""
+    category = str(row.get('category', '')).lower()
+    ind_type = str(row.get('type', '')).lower()
+    
+    if 'phishing' in category:
+        return "Update DNS blacklists and alert SOC of brand-impersonation attempts."
+    elif 'ransomware' in category or 'sha256' in ind_type:
+        return "Add hashes to EDR 'Block' list and trigger a retroactive host scan."
+    elif 'ip:port' in ind_type or 'malware' in category:
+        return "Block outbound traffic on specified ports (443, 995, 2078) to these IPs."
+    elif 'domain' in ind_type:
+        return "Implement DNS sinkholing to redirect traffic to internal honey-clients."
+    else:
+        return "Monitor for anomalous outbound connections and escalate to Tier 2 SOC."
+
+# 2. Process the Filtered Data
+# Assuming 'filtered_df' is your dataframe containing the 1,947 records
+def process_actionable_outputs(filtered_df):
+    st.header("📥 Technical Intelligence Export")
+    
+    # Apply the COA mapping to the dataframe
+    filtered_df['Recommended_COA'] = filtered_df.apply(get_course_of_action, axis=1)
+
+    # --- Export Format 1: CSV ---
+    csv_data = filtered_df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="⚡ Download CSV (Firewall/SIEM)",
+        data=csv_data,
+        file_name='threat_intel_export.csv',
+        mime='text/csv',
+    )
+
+    # --- Export Format 2: STIX-like JSON ---
+    # Creating a simplified STIX structure for SOAR ingestion
+    stix_output = []
+    for _, row in filtered_df.iterrows():
+        stix_obj = {
+            "type": "indicator",
+            "spec_version": "2.1",
+            "pattern": f"[{row['type']} = '{row['indicator']}']",
+            "pattern_type": "stix",
+            "description": row['Recommended_COA'],
+            "labels": [row['category']]
+        }
+        stix_output.append(stix_obj)
+    
+    json_data = json.dumps(stix_output, indent=4)
+    st.download_button(
+        label="🤖 Download JSON (SOAR/STIX-ready)",
+        data=json_data,
+        file_name='threat_intel_stix.json',
+        mime='application/json',
+    )
+
+    # 3. Display the COA Mapping Table
+    st.header("🛠 Recommended Courses of Action (COA)")
+    coa_summary = filtered_df[['category', 'type', 'Recommended_COA']].drop_duplicates()
+    st.table(coa_summary)
+
+# To run within your dashboard:
+# process_actionable_outputs(your_filtered_dataframe)
