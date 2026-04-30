@@ -4,7 +4,7 @@ import plotly.express as px
 from pyvis.network import Network
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Threat Intelligence Dashboard", layout="wide")
+#st.set_page_config(page_title="Threat Intelligence Dashboard", layout="wide")
 
 # ---------------------------------------------------------
 # GLOBAL UI THEME
@@ -17,8 +17,7 @@ html, body, [data-testid="stAppViewContainer"] {
     font-family: 'IBM Plex Sans', sans-serif;
 }
 .block-container {
-    padding-top: 1.2rem !important;
-    max-width: 900px !important;
+    padding-top: 2rem !important;
 }
 h1, h2, h3 {
     font-weight: 600;
