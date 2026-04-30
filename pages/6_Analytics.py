@@ -1428,39 +1428,249 @@ def render_executive_summary(
             paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#c9d1d9",
         )
         st.plotly_chart(fig_assets, use_container_width=True)
-        st.dataframe(asset_priority_df, use_container_width=True, hide_index=True)
-    else:
-        st.info("Critical asset priorities could not be loaded.")
+    #     st.dataframe(asset_priority_df, use_container_width=True, hide_index=True)
+    # else:
+    #     st.info("Critical asset priorities could not be loaded.")
 
-    # ── Section 5: Dissemination Snapshot ──
+    # # ── Section 5: Dissemination Snapshot ──
+    # st.markdown("### 5. Dissemination Snapshot")
+    # dissemination_df = pd.DataFrame([
+    #     {
+    #         "Audience":        "CISO / Executive Leadership",
+    #         "When":            "2 hours",
+    #         "What they receive": "Current threat posture, asset impact, and decision-ready risk summary.",
+    #         "Delivery method": "Executive dashboard and short finished-intelligence brief.",
+    #     },
+    #     {
+    #         "Audience":        "IR Team",
+    #         "When":            "Immediate - 1 hour",
+    #         "What they receive": "Incident-ready IOC package, threat actor context, and likely TTPs.",
+    #         "Delivery method": "Analyst dashboard, case notes, and direct operational handoff.",
+    #     },
+    #     {
+    #         "Audience":        "SOC / Detection Engineering",
+    #         "When":            "Same shift / 2 hours",
+    #         "What they receive": "Detection priorities, indicator patterns, enrichment, and monitoring targets.",
+    #         "Delivery method": "Detection queue, dashboard filters, and alerting updates.",
+    #     },
+    #     {
+    #         "Audience":        "Staff / Clients",
+    #         "When":            "6 - 24 hours depending on severity",
+    #         "What they receive": "Plain-language phishing or fraud warning with action steps.",
+    #         "Delivery method": "Bulletin, awareness notice, or customer-facing advisory.",
+    #     },
+    # ])
+    # st.dataframe(dissemination_df, use_container_width=True, hide_index=True)
+
+## second dissemination for comparison
     st.markdown("### 5. Dissemination Snapshot")
-    dissemination_df = pd.DataFrame([
-        {
-            "Audience":        "CISO / Executive Leadership",
-            "When":            "Within 2 hours of a critical finding",
-            "What they receive": "Current threat posture, asset impact, and decision-ready risk summary.",
-            "Delivery method": "Executive dashboard and short finished-intelligence brief.",
-        },
-        {
-            "Audience":        "IR Team",
-            "When":            "Immediate parallel notification",
-            "What they receive": "Incident-ready IOC package, threat actor context, and likely TTPs.",
-            "Delivery method": "Analyst dashboard, case notes, and direct operational handoff.",
-        },
-        {
-            "Audience":        "SOC / Detection Engineering",
-            "When":            "Same shift / within 4 hours",
-            "What they receive": "Detection priorities, indicator patterns, enrichment, and monitoring targets.",
-            "Delivery method": "Detection queue, dashboard filters, and alerting updates.",
-        },
-        {
-            "Audience":        "Staff / Clients",
-            "When":            "Within 24 to 48 hours if exposure is confirmed",
-            "What they receive": "Plain-language phishing or fraud warning with action steps.",
-            "Delivery method": "Bulletin, awareness notice, or customer-facing advisory.",
-        },
-    ])
-    st.dataframe(dissemination_df, use_container_width=True, hide_index=True)
+    st.caption("Intelligence dissemination sequence from detection to stakeholder notification.")
+    st.markdown(
+        """
+    <style>
+    /* ── Timeline container ── */
+    .dissem-timeline {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        padding: 0.5rem 0 0.5rem 2.8rem;
+        margin: 1rem 0 1.5rem;
+    }
+    
+    /* ── Vertical spine ── */
+    .dissem-timeline::before {
+        content: '';
+        position: absolute;
+        left: 1rem;
+        top: 1.4rem;
+        bottom: 1.4rem;
+        width: 2px;
+        background: linear-gradient(180deg, #f87171 0%, #f59e0b 33%, #38bdf8 66%, #4ade80 100%);
+        border-radius: 2px;
+    }
+    
+    /* ── Each row ── */
+    .dissem-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.2rem;
+        position: relative;
+        padding: 1.1rem 1.2rem 1.1rem 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* ── Dot on the spine ── */
+    .dissem-dot {
+        position: absolute;
+        left: -2.15rem;
+        top: 1.35rem;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid #0d1526;
+        flex-shrink: 0;
+        z-index: 1;
+    }
+    
+    /* ── Card body ── */
+    .dissem-card {
+        flex: 1;
+        background: linear-gradient(180deg, #0d1e35 0%, #0a1828 100%);
+        border: 1px solid #1e3a5f;
+        border-radius: 12px;
+        padding: 1rem 1.2rem 0.9rem;
+        border-left-width: 4px;
+    }
+    
+    /* ── Card header row ── */
+    .dissem-header {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        margin-bottom: 0.6rem;
+        flex-wrap: wrap;
+    }
+    .dissem-audience {
+        font-size: 0.97rem;
+        font-weight: 700;
+        color: #e6edf3;
+    }
+    .dissem-timing {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        border: 1px solid;
+        white-space: nowrap;
+    }
+    
+    /* ── Card body text ── */
+    .dissem-what {
+        font-size: 0.86rem;
+        color: #8ba3c0;
+        margin-bottom: 0.35rem;
+        line-height: 1.5;
+    }
+    .dissem-how {
+        font-size: 0.82rem;
+        color: #4a6785;
+        font-style: italic;
+    }
+    .dissem-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-right: 0.35rem;
+    }
+    
+    /* ── Per-stop accent colours ── */
+    .dissem-card.red   { border-left-color: #f87171; }
+    .dissem-card.amber { border-left-color: #f59e0b; }
+    .dissem-card.blue  { border-left-color: #38bdf8; }
+    .dissem-card.green { border-left-color: #4ade80; }
+    
+    .dissem-dot.red   { background: #f87171; }
+    .dissem-dot.amber { background: #f59e0b; }
+    .dissem-dot.blue  { background: #38bdf8; }
+    .dissem-dot.green { background: #4ade80; }
+    
+    .dissem-timing.red   { color: #f87171; border-color: rgba(248,113,113,0.35); background: rgba(248,113,113,0.08); }
+    .dissem-timing.amber { color: #f59e0b; border-color: rgba(245,158,11,0.35);  background: rgba(245,158,11,0.08);  }
+    .dissem-timing.blue  { color: #38bdf8; border-color: rgba(56,189,248,0.35);  background: rgba(56,189,248,0.08);  }
+    .dissem-timing.green { color: #4ade80; border-color: rgba(74,222,128,0.35);  background: rgba(74,222,128,0.08);  }
+    
+    .dissem-label.red   { color: #f87171; }
+    .dissem-label.amber { color: #f59e0b; }
+    .dissem-label.blue  { color: #38bdf8; }
+    .dissem-label.green { color: #4ade80; }
+    </style>
+    
+    <div class="dissem-timeline">
+    
+    <!-- Stop 1: IR Team — Immediate -->
+    <div class="dissem-row">
+        <div class="dissem-dot red"></div>
+        <div class="dissem-card red">
+        <div class="dissem-header">
+            <span class="dissem-audience">IR Team</span>
+            <span class="dissem-timing red">Immediate</span>
+        </div>
+        <div class="dissem-what">
+            <span class="dissem-label red">Receives</span>
+            Incident-ready IOC package, threat actor context, and likely TTPs for triage and containment.
+        </div>
+        <div class="dissem-how">
+            <span class="dissem-label red">Via</span>
+            Analyst dashboard, case notes, and direct operational handoff.
+        </div>
+        </div>
+    </div>
+    
+    <!-- Stop 2: CISO — 2 hours -->
+    <div class="dissem-row">
+        <div class="dissem-dot amber"></div>
+        <div class="dissem-card amber">
+        <div class="dissem-header">
+            <span class="dissem-audience">CISO / Executive Leadership</span>
+            <span class="dissem-timing amber">Within 2 hours</span>
+        </div>
+        <div class="dissem-what">
+            <span class="dissem-label amber">Receives</span>
+            Current threat posture, asset impact, and decision-ready risk summary with recommended leadership actions.
+        </div>
+        <div class="dissem-how">
+            <span class="dissem-label amber">Via</span>
+            Executive dashboard and short finished-intelligence brief.
+        </div>
+        </div>
+    </div>
+    
+    <!-- Stop 3: SOC — Same shift -->
+    <div class="dissem-row">
+        <div class="dissem-dot blue"></div>
+        <div class="dissem-card blue">
+        <div class="dissem-header">
+            <span class="dissem-audience">SOC / Detection Engineering</span>
+            <span class="dissem-timing blue">Same shift / 4 hours</span>
+        </div>
+        <div class="dissem-what">
+            <span class="dissem-label blue">Receives</span>
+            Detection priorities, indicator patterns, enrichment context, and monitoring targets for tuning.
+        </div>
+        <div class="dissem-how">
+            <span class="dissem-label blue">Via</span>
+            Detection queue, dashboard filters, and alerting updates.
+        </div>
+        </div>
+    </div>
+    
+    <!-- Stop 4: Staff / Clients — 24–48 hours -->
+    <div class="dissem-row">
+        <div class="dissem-dot green"></div>
+        <div class="dissem-card green">
+        <div class="dissem-header">
+            <span class="dissem-audience">Staff / Clients</span>
+            <span class="dissem-timing green">24 – 48 hours if exposure confirmed</span>
+        </div>
+        <div class="dissem-what">
+            <span class="dissem-label green">Receives</span>
+            Plain-language phishing or fraud warning with clear action steps and reporting guidance.
+        </div>
+        <div class="dissem-how">
+            <span class="dissem-label green">Via</span>
+            Bulletin, awareness notice, or customer-facing advisory.
+        </div>
+        </div>
+    </div>
+    
+    </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     # ── Section 6: Courses of Action — styled to match exec-card ──
     st.markdown("### 6. Courses of Action")
@@ -1697,6 +1907,112 @@ def render_approach_justification() -> None:
         )
 
 
+def render_future_cti_directions() -> None:
+    st.markdown(
+        """
+        <div class="cti-banner">
+            <h3>Future CTI Directions</h3>
+            <p>
+                These roadmap items build directly on the platform's current analytics, triage, and dissemination
+                capabilities so the system becomes more actionable without changing its U.S. banking focus.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <span class="cti-badge badge-blue">Roadmap: Near-Term Enhancements</span>
+        <span class="cti-badge badge-slate">Focus: Analyst Speed, Fraud Context, Stakeholder Delivery</span>
+        <span class="cti-badge badge-teal">Grounded In: Current Platform Capabilities</span>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    future_col_1, future_col_2, future_col_3 = st.columns(3, gap="large")
+
+    with future_col_1:
+        st.markdown(
+            """
+            <div class="method-card method-blue">
+                <h4>Automatic Indicator Enrichment</h4>
+                <p>Add automatic lookups for suspicious URLs, domains, and IPs so analysts get richer context without switching tools.</p>
+                <div class="info-block analysis-block"><strong>What this adds:</strong> Automatic enrichment from sources like VirusTotal and Shodan when indicators are flagged inside the platform.</div>
+                <div class="info-block output-block"><strong>Operational value:</strong> Analysts can validate maliciousness faster and prioritize indicators with stronger external confirmation.</div>
+                <div class="info-block output-block"><strong>Builds on:</strong> Existing PhishTank and ThreatFox integrations</div>
+                <div class="info-block validation-block"><strong>Why it matters next:</strong> It reduces manual lookup time and improves confidence scoring for phishing and infrastructure alerts.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with future_col_2:
+        st.markdown(
+            """
+            <div class="method-card method-teal">
+                <h4>Transaction Data Integration</h4>
+                <p>Connect external threat indicators to internal banking activity so fraud-relevant threats can be matched to real operational signals.</p>
+                <div class="info-block analysis-block"><strong>What this adds:</strong> IOC matching against transaction, account, and authentication telemetry to flag higher-risk events earlier.</div>
+                <div class="info-block output-block"><strong>Operational value:</strong> Moves the platform closer to proactive fraud detection instead of external monitoring alone.</div>
+                <div class="info-block output-block"><strong>Builds on:</strong> Current fraud-prevention use case, asset prioritization, and IOC monitoring workflows.</div>
+                <div class="info-block validation-block"><strong>Why it matters:</strong> It strengthens the bridge between CTI collection and real defensive action inside the banking environment.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with future_col_3:
+        st.markdown(
+            """
+            <div class="method-card method-navy">
+                <h4>Personalized Alerts by Role</h4>
+                <p>Tailor outputs to analysts, executives, and operational teams so each audience receives the right level of detail automatically.</p>
+                <div class="info-block analysis-block"><strong>What this adds:</strong> Role-aware notifications that separate technical evidence, leadership summaries, and user-facing awareness content.</div>
+                <div class="info-block output-block"><strong>Operational value:</strong> It shortens dissemination time and reduces the need for manual translation between technical and non-technical stakeholders.</div>
+                <div class="info-block output-block"><strong>Builds on:</strong> Executive summary, analyst drill-down, and operational dissemination workflows.</div>
+                <div class="info-block validation-block"><strong>Why it matters:</strong>  More scalable platform during active campaigns to enable parallel team-based decision-making.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # st.markdown("### Why These Three Directions Matter")
+    # roadmap_left, roadmap_right = st.columns(2, gap="large")
+
+    # with roadmap_left:
+    #     st.markdown(
+    #         """
+    #         <div class="bottom-panel">
+    #             <h4>Operational Impact</h4>
+    #             <ul>
+    #                 <li><strong>Faster validation:</strong> enrichment reduces manual IOC research during triage.</li>
+    #                 <li><strong>Stronger fraud context:</strong> transaction integration connects external threats to internal risk.</li>
+    #                 <li><strong>Better dissemination:</strong> role-based delivery improves speed and clarity during response.</li>
+    #             </ul>
+    #         </div>
+    #         """,
+    #         unsafe_allow_html=True,
+    #     )
+
+    # with roadmap_right:
+    #     st.markdown(
+    #         """
+    #         <div class="bottom-panel">
+    #             <h4>Platform Readiness</h4>
+    #             <ul>
+    #                 <li><strong>Already supported by current architecture:</strong> the project already has IOC ingestion, analytics, and role-based presentation layers.</li>
+    #                 <li><strong>Realistic next scope:</strong> these additions extend the current platform instead of requiring a full redesign.</li>
+    #                 <li><strong>Aligned to Milestone 4:</strong> they show a credible path from final prototype to a more operational CTI workflow.</li>
+    #             </ul>
+    #         </div>
+    #         """,
+    #         unsafe_allow_html=True,
+    #     )
+
+
+# Future CTI Directions
+
 # ── Data loading ──────────────────────────────────────────────────────────────
 
 group_summary        = load_csv("group_risk_summary.csv")
@@ -1812,7 +2128,7 @@ if "pending_kmeans_mode_analytics" in st.session_state:
 
 st.radio(
     "View",
-    ["Executive Summary", "Analyst Drill-Down", "Approach Justification"],
+    ["Executive Summary", "Analyst Drill-Down", "Approach Justification", "Future CTI Directions"],
     horizontal=True,
     key="analytics_view",
     label_visibility="collapsed",
@@ -1919,6 +2235,9 @@ elif st.session_state["analytics_view"] == "Analyst Drill-Down":
         text_mining_metrics=text_mining_metrics,
         threatfox_kmeans_metrics=threatfox_kmeans_metrics,
     )
+
+elif st.session_state["analytics_view"] == "Future CTI Directions":
+    render_future_cti_directions()
 
 else:
     render_approach_justification()
