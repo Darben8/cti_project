@@ -158,7 +158,7 @@ st.markdown(
 )
 
 # ADD CUSTOM RIGHT ARROW BUTTON
-st.markdown('<div class="right-arrow-btn">»</div>', unsafe_allow_html=True)
+#st.markdown('<div class="right-arrow-btn">»</div>', unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────
 # HERO SECTION
