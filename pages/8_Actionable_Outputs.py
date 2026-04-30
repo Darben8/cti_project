@@ -27,7 +27,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("📤 Milestone 4: Actionable Outputs & Course-of-Action Mapping")
+st.title("📤 Actionable Outputs & Course-of-Action Mapping")
 st.markdown("""
 **Objective**: Transform threat intelligence data into actionable outputs with structured 
 recommendations through multiple export formats (CSV, JSON, STIX).
@@ -70,7 +70,7 @@ def load_and_map_data():
             df_threatfox = pd.read_csv(threatfox_path)
             if not df_threatfox.empty:
                 df_threatfox['source'] = 'ThreatFox'
-                dfs["ThreatFox IOCs"] = df_threatfox
+                dfs["ThreatFox Data"] = df_threatfox
     except Exception as e:
         st.sidebar.error(f"Error loading filtered_iocs_threatfox.csv: {e}")
     
@@ -493,13 +493,13 @@ with tab4:
     """)
     
     # Display COA database_folder
-    st.markdown("### COA Database_folder")
+    st.markdown("### COA Database")
     
     for threat_type, coa_info in COURSE_OF_ACTIONS.items():
         with st.expander(f"🎯 {threat_type.upper()} - {coa_info['severity']} Severity"):
             st.markdown(f"**TTL**: {coa_info['ttl_days']} days")
             st.markdown("**Recommended Actions**:")
-            for i, action in enumerate(coa_info["actions"], 1):
+            for i, action in enumerate(coa_info["recommended_actions"], 1):
                 st.markdown(f"{i}. {action}")
     
     st.markdown("---")

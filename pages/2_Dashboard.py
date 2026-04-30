@@ -531,7 +531,7 @@ with cti_dashboard_tab:
 
 
 
-    with st.expander("**📈 Milestone 3**"):
+    with st.expander("**📈 Preliminary Visualizations**"):
         #col1, col2 = st.columns(2)
         col1, col2 = st.columns([1, 1], gap="large")
         with col1:
