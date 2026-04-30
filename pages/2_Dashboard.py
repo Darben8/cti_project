@@ -842,9 +842,7 @@ with cti_dashboard_tab:
         if type_counts.empty:
             st.info("No indicator types are available for the current filters.")
         else:
-            col1, col2 = st.columns([1, 0.4])   # two equal columns
-
-with col1:   # chart takes HALF the page width
+        
     fig_types = px.bar_polar(
         type_counts,
         r="count",
