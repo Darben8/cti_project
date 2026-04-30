@@ -1,5 +1,14 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
+from pyvis.network import Network
+import streamlit.components.v1 as components
 
+st.set_page_config(page_title="Threat Intelligence Dashboard", layout="wide")
+
+# ---------------------------------------------------------
+# INTELLIGENCE SUMMARY SECTION (ADDED)
+# ---------------------------------------------------------
 st.header("🔍 Key Insights & Intelligence Summary")
 
 st.markdown("""
@@ -81,3 +90,95 @@ Financial login portals are high‑value targets for Ramnit credential theft mod
 
 ---
 """)
+
+# ---------------------------------------------------------
+# LOAD DATASETS SAFELY FROM data/ FOLDER
+# ---------------------------------------------------------
+processed_ports = pd.read_csv("data/processed_port_iocs.csv", on_bad_lines="skip")
+threat_events = pd.read_csv("data/threat_events.csv", on_bad_lines="skip")
+
+# ---------------------------------------------------------
+# DROPDOWN MENU
+# ---------------------------------------------------------
+viz = st.selectbox(
+    "Select a visualization:",
+    [
+        "C2 Port Network Visualization",
+        "Akira Ransomware – MITRE Technique Frequency"
+    ]
+)
+
+# ---------------------------------------------------------
+# 1. C2 PORT NETWORK VISUALIZATION (PyVis)
+# ---------------------------------------------------------
+if viz == "C2 Port Network Visualization":
+    st.subheader("🕸️ C2 Port Network Visualization (Port Frequency Network)")
+
+    if "port" not in processed_ports.columns:
+        st.error("❌ processed_port_iocs.csv must contain a 'port' column.")
+    else:
+        processed_ports["port"] = pd.to_numeric(processed_ports["port"], errors="coerce")
+
+        port_counts = (
+            processed_ports["port"]
+            .value_counts()
+            .reset_index()
+        )
+        port_counts.columns = ["Port", "Count"]
+
+        net = Network(height="600px", width="100%", bgcolor="#ffffff", font_color="black")
+
+        net.add_node("C2 Ports", size=50, color="#ff4d4d")
+
+        for _, row in port_counts.iterrows():
+            port = str(row["Port"])
+            count = int(row["Count"])
+
+            net.add_node(
+                port,
+                size=10 + count,
+                title=f"Port {port} — Count: {count}",
+                color="#1f77b4"
+            )
+
+            net.add_edge("C2 Ports", port)
+
+        net.save_graph("port_network.html")
+
+        HtmlFile = open("port_network.html", "r", encoding="utf-8")
+        components.html(HtmlFile.read(), height=600)
+
+# ---------------------------------------------------------
+# 2. AKIRA RANSOMWARE – MITRE TECHNIQUE BAR CHART
+# ---------------------------------------------------------
+elif viz == "Akira Ransomware – MITRE Technique Frequency":
+    st.subheader("🔥 Akira Ransomware – MITRE Technique Frequency")
+
+    threat_events = threat_events.rename(columns={
+        "technique": "mitre_technique",
+        "ttp": "mitre_technique",
+        "attack_id": "mitre_technique"
+    })
+
+    if "mitre_technique" not in threat_events.columns:
+        st.error("❌ threat_events.csv must contain a 'mitre_technique' column.")
+    else:
+        ttp_counts = (
+            threat_events["mitre_technique"]
+            .value_counts()
+            .reset_index()
+        )
+        ttp_counts.columns = ["MITRE Technique", "Count"]
+
+        fig = px.bar(
+            ttp_counts,
+            x="MITRE Technique",
+            y="Count",
+            title="Akira Ransomware – MITRE Technique Usage",
+            color="Count",
+            color_continuous_scale="Reds"
+        )
+
+        fig.update_layout(xaxis_title="MITRE Technique", yaxis_title="Frequency")
+
+        st.plotly_chart(fig, use_container_width=True)
