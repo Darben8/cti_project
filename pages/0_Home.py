@@ -271,9 +271,9 @@ with st.expander("📌 Milestone 4 — Operational Intelligence & Final Platform
         <div class="ms-item"><span class="ms-item-check">✓</span>Key Insights: three intelligence findings with implications and recommended actions</div>
         <div class="ms-item"><span class="ms-item-check">✓</span>Operational Triage Dashboard: severity/category filtering, COA column, CSV/JSON export</div>
         <div class="ms-item"><span class="ms-item-check">✓</span>Operational Intelligence page: who/when/what/how dissemination framework</div>
-        <div class="ms-item"><span class="ms-item-dot">○</span>STIX-like JSON export and IOC-to-control course-of-action mapping</div>
-        <div class="ms-item"><span class="ms-item-dot">✓</span>Future CTI Platform Directions: three justified development paths</div>
-        <div class="ms-item"><span class="ms-item-dot">✓</span>Polished UI, consistent dark theme, updated README with user guide</div>
+        <div class="ms-item"><span class="ms-item-check">✓</span>STIX-like JSON export and IOC-to-control course-of-action mapping</div>
+        <div class="ms-item"><span class="ms-item-check">✓</span>Future CTI Platform Directions: three justified development paths</div>
+        <div class="ms-item"><span class="ms-item-check">✓</span>Polished UI, consistent dark theme, updated README with user guide</div>
         <div class="ms-item"><span class="ms-item-check">✓</span>Condensed the Dashboard page and added new tabs</div>
         <div class="ms-item"><span class="ms-item-check">✓</span>Redesigned homepage with new hero banner, project framing, and timeline summary</div>
         <div class="ms-item"><span class="ms-item-check">✓</span>Introduced overview page that provides a concise project summary</div>
