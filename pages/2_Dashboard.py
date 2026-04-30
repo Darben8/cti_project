@@ -842,15 +842,38 @@ with cti_dashboard_tab:
         if type_counts.empty:
             st.info("No indicator types are available for the current filters.")
         else:
-            fig_types = px.pie(
-                type_counts,
-                names="type",
-                values="count",
-                color_discrete_sequence=TYPE_COLORS,
-                hole=0.45,
-            )
-            fig_types.update_layout(paper_bgcolor="#f6fbff")
-            st.plotly_chart(fig_types, use_container_width=True)
+            col1, col2 = st.columns([1, 0.5])   # two equal columns
+
+with col1:   # chart takes HALF the page width
+    fig_types = px.bar_polar(
+        type_counts,
+        r="count",
+        theta="type",
+        color="count",
+        color_continuous_scale=["#ffd166", "#f18f01", "#c73e1d"],
+    )
+
+    fig_types.update_layout(
+        height=350,                     # SAME HEIGHT
+        autosize=False,                 # PREVENT AUTO EXPANSION
+        margin=dict(l=10, r=10, t=10, b=10),
+        paper_bgcolor="#fff7f5",
+
+        polar=dict(
+            bgcolor="#fff7f5",
+            radialaxis=dict(showticklabels=False, ticks="", linewidth=1),
+            angularaxis=dict(showticklabels=True, linewidth=1, color="#333"),
+        ),
+
+        showlegend=False,
+        coloraxis_showscale=False,
+
+        # FORCE WIDTH TO MATCH COLUMN
+        width=None
+    )
+
+    st.plotly_chart(fig_types, use_container_width=True)
+
 
     with right_col:
         st.subheader("Ransomware Activity Over Time")
